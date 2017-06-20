@@ -4,3 +4,4 @@ AllCops:
     - "vendor/**/*"
     - "pkg/**/*"
     - "chef-config/pkg/**/*"
+    - "habitat/**/*"
