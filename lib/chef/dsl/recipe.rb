@@ -74,12 +74,6 @@ class Chef
       def exec(args)
         raise Chef::Exceptions::ResourceNotFound, "exec was called, but you probably meant to use an execute resource.  If not, please call Kernel#exec explicitly.  The exec block called was \"#{args}\""
       end
-
-      # @deprecated Use Chef::DSL::Recipe instead, will be removed in Chef 13
-      module FullDSL
-        include Chef::DSL::Recipe
-        extend Chef::Mixin::LazyModuleInclude
-      end
     end
   end
 end
