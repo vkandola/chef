@@ -52,4 +52,5 @@ fetcher_read_timeout 120
 # local_software_dirs ['/path/to/local/software']
 
 fatal_transitive_dependency_licensing_warnings true
-fips_mode (ENV["OMNIBUS_FIPS_MODE"] || "").casecmp("true") >= 0
+#fips_mode (ENV["OMNIBUS_FIPS_MODE"] || "").casecmp("true") >= 0
+fips_mode true 
