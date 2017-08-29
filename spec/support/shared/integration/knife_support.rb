@@ -162,7 +162,7 @@ module KnifeSupport
       expected[:stderr] = "" if !expected[:stderr]
       expected[:exit_code] = 0 if !expected[:exit_code]
       # TODO make this go away
-      stderr_actual = @stderr.sub(/^WARNING: No knife configuration file found\n/, "")
+      stderr_actual = @stderr.sub(/^WARNING: No knife.rb configuration file found\n/, "")
 
       if expected[:stderr].is_a?(Regexp)
         expect(stderr_actual).to match(expected[:stderr])

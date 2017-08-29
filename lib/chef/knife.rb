@@ -182,7 +182,7 @@ class Chef
       config_loader.explicit_config_file = explicit_config_file
       config_loader.load
 
-      ui.warn("No knife configuration file found") if config_loader.no_config_found?
+      ui.warn("No knife.rb configuration file found. See https://docs.chef.io/config_rb_knife.html for details.") if config_loader.no_config_found?
 
       config_loader
     rescue Exceptions::ConfigurationError => e
@@ -462,7 +462,7 @@ class Chef
         ui.info  "Original Exception: #{e.class.name}: #{e.message}"
       when Errno::ECONNREFUSED, Timeout::Error, Errno::ETIMEDOUT, SocketError
         ui.error "Network Error: #{e.message}"
-        ui.info "Check your knife configuration and network settings"
+        ui.info "Check your knife.rb configuration and network settings"
       when NameError, NoMethodError
         ui.error "knife encountered an unexpected error"
         ui.info  "This may be a bug in the '#{self.class.common_name}' knife command or plugin"

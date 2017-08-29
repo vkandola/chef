@@ -560,7 +560,7 @@ describe Chef::Knife do
       # *nix = Errno::ECONNREFUSED: Connection refused
       # win32: Errno::ECONNREFUSED: No connection could be made because the target machine actively refused it.
       expect(stderr.string).to match(%r{ERROR: Network Error: .* - y u no shut up})
-      expect(stderr.string).to match(%r{Check your knife configuration and network settings})
+      expect(stderr.string).to match(%r{Check your knife.rb configuration and network settings})
     end
 
     it "formats SSL errors nicely and suggests to use `knife ssl check` and `knife ssl fetch`" do
