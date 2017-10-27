@@ -12,10 +12,10 @@ base = None
 def get_base():
     global base
     if base is None:
-      base = yum.YumBase()
-      base.preconf.debuglevel = 0
-      base.preconf.errorlevel = 0
-      base.preconf.plugins = True
+        base = yum.YumBase()
+    base.preconf.debuglevel = 0
+    base.preconf.errorlevel = 0
+    base.preconf.plugins = True
     return base
 
 # FIXME: leaks memory and does not work
@@ -31,16 +31,16 @@ def versioncompare(versions):
     if (versions[0] is None) or (versions[1] is None):
         sys.stdout.write('0\n')
     else:
-	evr_comparison = sack.evr_cmp(versions[0], versions[1])
+        evr_comparison = sack.evr_cmp(versions[0], versions[1])
         sys.stdout.write('{}\n'.format(evr_comparison))
 
 def query(command):
     base = get_base()
 
     if command['action'] == "whatinstalled":
-    	e, m, _ = base.rpmdb.matchPackageNames([command['provides']])
+        e, m, _ = base.rpmdb.matchPackageNames([command['provides']])
     if command['action'] == "whatavailable":
-    	e, m, _ = base.pkgSack.matchPackageNames([command['provides']])
+        e, m, _ = base.pkgSack.matchPackageNames([command['provides']])
 
     pkgs = e + m
 #    q = subj.get_best_query(sack, with_provides=True)
