@@ -3,7 +3,6 @@
 
 import sys
 import yum
-import hawkey
 import signal
 import os
 import json
@@ -30,43 +29,38 @@ def flushcache():
 def versioncompare(versions):
     sack = get_sack()
     if (versions[0] is None) or (versions[1] is None):
-      sys.stdout.write('0\n')
+        sys.stdout.write('0\n')
     else:
-      evr_comparison = sack.evr_cmp(versions[0], versions[1])
-      sys.stdout.write('{}\n'.format(evr_comparison))
+	evr_comparison = sack.evr_cmp(versions[0], versions[1])
+        sys.stdout.write('{}\n'.format(evr_comparison))
 
 def query(command):
     base = get_base()
 
-    matches = base.rpmdb.matchPackageNames([command['provides']])
-    sys.stdout.write('TEST {}\n'.format(command['provides']))
-    sys.stdout.write('TEST {}\n'.format(matches))
-    sys.stdout.write('TEST {}\n'.format(base.returnPackagesByDep(command['provides'])))
-
-    q = subj.get_best_query(sack, with_provides=True)
-
     if command['action'] == "whatinstalled":
-        q = q.installed()
-
+    	e, m, _ = base.rpmdb.matchPackageNames([command['provides']])
     if command['action'] == "whatavailable":
-        q = q.available()
+    	e, m, _ = base.pkgSack.matchPackageNames([command['provides']])
 
-    if 'epoch' in command:
-        q = q.filterm(epoch=int(command['epoch']))
-    if 'version' in command:
-        q = q.filterm(version__glob=command['version'])
-    if 'release' in command:
-        q = q.filterm(release__glob=command['release'])
-
-    if 'arch' in command:
-        q = q.filterm(arch__glob=command['arch'])
+    pkgs = e + m
+#    q = subj.get_best_query(sack, with_provides=True)
+#
+#    if 'epoch' in command:
+#        q = q.filterm(epoch=int(command['epoch']))
+#    if 'version' in command:
+#        q = q.filterm(version__glob=command['version'])
+#    if 'release' in command:
+#        q = q.filterm(release__glob=command['release'])
+#
+#    if 'arch' in command:
+#        q = q.filterm(arch__glob=command['arch'])
 
     # only apply the default arch query filter if it returns something
-    archq = q.filter(arch=[ 'noarch', hawkey.detect_arch() ])
-    if len(archq.run()) > 0:
-        q = archq
+#    archq = q.filter(arch=[ 'noarch', hawkey.detect_arch() ])
+#    if len(archq.run()) > 0:
+#        q = archq
 
-    pkgs = q.latest(1).run()
+#    pkgs = q.latest(1).run()
 
     if not pkgs:
         sys.stdout.write('{} nil nil\n'.format(command['provides'].split().pop(0)))

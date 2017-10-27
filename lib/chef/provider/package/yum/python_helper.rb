@@ -77,8 +77,9 @@ class Chef
               Chef::Log.debug "sending '#{json}' to python helper"
               stdin.syswrite json + "\n"
               output = stdout.sysread(4096).chomp
+              # yum libraries like to barf stuff on stdout so take the last line
               Chef::Log.debug "got '#{output}' from python helper"
-              version = parse_response(output)
+              version = parse_response(output.lines.last)
               Chef::Log.debug "parsed #{version} from python helper"
               version
             end
