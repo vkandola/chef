@@ -43,10 +43,21 @@ def versioncompare(versions):
 def query(command):
     base = get_base()
 
+    package_spec = command['provides']
+
+    if 'epoch' in command:
+      package_spec += "-{}:".format(command['epoch'])
+    if 'version' in command:
+      package_spec += "-{}".format(command['version'])
+    if 'release' in command:
+      package_spec += "-{}".format(command['release'])
+    if 'arch' in command:
+      package_spec += ".{}".format(command['arch'])
+
     if command['action'] == "whatinstalled":
-        e, m, _ = base.rpmdb.matchPackageNames([command['provides']])
+        e, m, _ = base.rpmdb.matchPackageNames([package_spec])
     if command['action'] == "whatavailable":
-        e, m, _ = base.pkgSack.matchPackageNames([command['provides']])
+        e, m, _ = base.pkgSack.matchPackageNames([package_spec])
 
     pkgs = e + m
 #    q = subj.get_best_query(sack, with_provides=True)
