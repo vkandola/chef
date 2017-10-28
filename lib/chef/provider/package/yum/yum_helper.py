@@ -6,7 +6,7 @@ import yum
 import signal
 import os
 import json
-from rpmUtils.miscutils import compareEVR
+from rpmUtils.miscutils import stringToVersion,compareEVR
 
 base = None
 
@@ -32,11 +32,12 @@ def sort_version_compare(version1, version2):
     return compare
 
 def versioncompare(versions):
-    sack = get_sack()
     if (versions[0] is None) or (versions[1] is None):
         sys.stdout.write('0\n')
     else:
-        evr_comparison = sack.evr_cmp(versions[0], versions[1])
+        (e1, v1, r1) = stringToVersion(versions[0])
+        (e2, v2, r2) = stringToVersion(versions[1])
+        evr_comparison = compareEVR((e1, v1, r1), (e2, v2, r2))
         sys.stdout.write('{}\n'.format(evr_comparison))
 
 def query(command):
