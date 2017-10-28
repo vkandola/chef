@@ -6,6 +6,7 @@ import yum
 import signal
 import os
 import json
+from rpmUtils.miscutils import compareEVR
 
 base = None
 
@@ -25,6 +26,10 @@ def flushcache():
     except OSError:
         pass
     get_sack().load_system_repo(build_cache=True)
+
+def sort_version_compare(version1, version2):
+    compare = compareEVR((version1.epoch, version1.version, version1.release), (version2.epoch, version2.version, version2.release))
+    return compare
 
 def versioncompare(versions):
     sack = get_sack()
@@ -66,7 +71,7 @@ def query(command):
         sys.stdout.write('{} nil nil\n'.format(command['provides'].split().pop(0)))
     else:
         # make sure we picked the package with the highest version
-        pkgs.sort
+        pkgs.sort(sort_version_compare)
         pkg = pkgs.pop()
         sys.stdout.write('{} {}:{}-{} {}\n'.format(pkg.name, pkg.epoch, pkg.version, pkg.release, pkg.arch))
 
