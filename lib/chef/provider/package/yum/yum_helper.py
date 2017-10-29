@@ -6,7 +6,9 @@ import yum
 import signal
 import os
 import json
+import re
 from rpmUtils.miscutils import stringToVersion,compareEVR
+from rpmUtils.arch import getBaseArch
 
 base = None
 
@@ -27,9 +29,16 @@ def flushcache():
         pass
     get_sack().load_system_repo(build_cache=True)
 
-def sort_version_compare(version1, version2):
-    compare = compareEVR((version1.epoch, version1.version, version1.release), (version2.epoch, version2.version, version2.release))
-    return compare
+def pkgstr_to_nevra(pkgstr):
+    REGEX_PKG = re.compile(r"(\d*):?(.*)-(.*)-(.*)\.(.*)$")
+    res = REGEX_PKG.search(pkgstr)
+    if res:
+      (e,n,v,r,a) = res.groups()
+      if e == "":
+        e = "0"
+      return [True,n,e,v,r,a]
+    else:
+      return [False]
 
 def versioncompare(versions):
     if (versions[0] is None) or (versions[1] is None):
@@ -52,14 +61,29 @@ def query(command):
     if 'release' in command:
       package_spec += "-{}".format(command['release'])
     if 'arch' in command:
+      desired_arch = command['arch']
       package_spec += ".{}".format(command['arch'])
+    else:
+      desired_arch = getBaseArch()
+
+    pkgstr_nevra = pkgstr_to_nevra(command['provides'])
 
     if command['action'] == "whatinstalled":
+      if pkgstr_nevra[0] == True:
+        pkgs = base.rpmdb.searchNevra(name=pkgstr_nevra[1], epoch=pkgstr_nevra[2], ver=pkgstr_nevra[3], rel=pkgstr_nevra[4], arch=pkgstr_nevra[5])
+      else:
         e, m, _ = base.rpmdb.matchPackageNames([package_spec])
     if command['action'] == "whatavailable":
+      if pkgstr_nevra[0] == True:
+        pkgs = base.pkgSack.searchNevra(name=pkgstr_nevra[1], epoch=pkgstr_nevra[2], ver=pkgstr_nevra[3], rel=pkgstr_nevra[4], arch=pkgstr_nevra[5])
+      else:
         e, m, _ = base.pkgSack.matchPackageNames([package_spec])
 
-    pkgs = e + m
+    if pkgstr_nevra[0] == False:
+      pkgs = e + m
+    else:
+      sys.stdout.write('TESTING {}\n'.format(pkgs))
+
 #    q = subj.get_best_query(sack, with_provides=True)
 #
 #    if 'epoch' in command:
@@ -83,8 +107,8 @@ def query(command):
         sys.stdout.write('{} nil nil\n'.format(command['provides'].split().pop(0)))
     else:
         # make sure we picked the package with the highest version
-        pkgs.sort(sort_version_compare)
-        pkg = pkgs.pop()
+        pkgs = base.bestPackagesFromList(pkgs,arch=desired_arch,single_name=True)
+        pkg = pkgs.pop(0)
         sys.stdout.write('{} {}:{}-{} {}\n'.format(pkg.name, pkg.epoch, pkg.version, pkg.release, pkg.arch))
 
 # the design of this helper is that it should try to be 'brittle' and fail hard and exit in order
