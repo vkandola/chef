@@ -16,29 +16,10 @@ def get_base():
     global base
     if base is None:
         base = yum.YumBase()
-    base.preconf.debuglevel = 0
-    base.preconf.errorlevel = 0
-    base.preconf.plugins = True
+        base.preconf.debuglevel = -5
+        base.preconf.errorlevel = -1
+        base.preconf.plugins = True
     return base
-
-# FIXME: leaks memory and does not work
-def flushcache():
-    try:
-        os.remove('/var/cache/yum/@System.solv')
-    except OSError:
-        pass
-    get_sack().load_system_repo(build_cache=True)
-
-def pkgstr_to_nevra(pkgstr):
-    REGEX_PKG = re.compile(r"(\d*):?(.*)-(.*)-(.*)\.(.*)$")
-    res = REGEX_PKG.search(pkgstr)
-    if res:
-      (e,n,v,r,a) = res.groups()
-      if e == "":
-        e = "0"
-      return [True,n,e,v,r,a]
-    else:
-      return [False]
 
 def versioncompare(versions):
     if (versions[0] is None) or (versions[1] is None):
@@ -52,56 +33,30 @@ def versioncompare(versions):
 def query(command):
     base = get_base()
 
-    package_spec = command['provides']
-
+    args = { 'name': command['provides'] }
     if 'epoch' in command:
-      package_spec += "-{}:".format(command['epoch'])
+        args['epoch'] = command['epoch']
     if 'version' in command:
-      package_spec += "-{}".format(command['version'])
+        args['version'] = command['version']
     if 'release' in command:
-      package_spec += "-{}".format(command['release'])
+        args['release'] = command['release']
     if 'arch' in command:
-      desired_arch = command['arch']
-      package_spec += ".{}".format(command['arch'])
+        desired_arch = command['arch']
+        args['arch'] = command['arch']
     else:
-      desired_arch = getBaseArch()
+        desired_arch = getBaseArch()
 
-    pkgstr_nevra = pkgstr_to_nevra(command['provides'])
-
+    obj = None
     if command['action'] == "whatinstalled":
-      if pkgstr_nevra[0] == True:
-        pkgs = base.rpmdb.searchNevra(name=pkgstr_nevra[1], epoch=pkgstr_nevra[2], ver=pkgstr_nevra[3], rel=pkgstr_nevra[4], arch=pkgstr_nevra[5])
-      else:
-        e, m, _ = base.rpmdb.matchPackageNames([package_spec])
-    if command['action'] == "whatavailable":
-      if pkgstr_nevra[0] == True:
-        pkgs = base.pkgSack.searchNevra(name=pkgstr_nevra[1], epoch=pkgstr_nevra[2], ver=pkgstr_nevra[3], rel=pkgstr_nevra[4], arch=pkgstr_nevra[5])
-      else:
-        e, m, _ = base.pkgSack.matchPackageNames([package_spec])
-
-    if pkgstr_nevra[0] == False:
-      pkgs = e + m
+        obj = base.rpmdb
     else:
-      sys.stdout.write('TESTING {}\n'.format(pkgs))
+        obj = base.pkgSack
 
-#    q = subj.get_best_query(sack, with_provides=True)
-#
-#    if 'epoch' in command:
-#        q = q.filterm(epoch=int(command['epoch']))
-#    if 'version' in command:
-#        q = q.filterm(version__glob=command['version'])
-#    if 'release' in command:
-#        q = q.filterm(release__glob=command['release'])
-#
-#    if 'arch' in command:
-#        q = q.filterm(arch__glob=command['arch'])
-
-    # only apply the default arch query filter if it returns something
-#    archq = q.filter(arch=[ 'noarch', hawkey.detect_arch() ])
-#    if len(archq.run()) > 0:
-#        q = archq
-
-#    pkgs = q.latest(1).run()
+    pkgs = obj.searchNevra(**args)
+ 
+    if not pkgs:
+        e, m, _ = obj.matchPackageNames(command['provides'])
+        pkgs = e + m
 
     if not pkgs:
         sys.stdout.write('{} nil nil\n'.format(command['provides'].split().pop(0)))
@@ -132,8 +87,6 @@ while 1:
         query(command)
     elif command['action'] == "whatavailable":
         query(command)
-    elif command['action'] == "flushcache":
-        flushcache()
     elif command['action'] == "versioncompare":
         versioncompare(command['versions'])
     else:
