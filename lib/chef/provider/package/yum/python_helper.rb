@@ -32,19 +32,23 @@ class Chef
           attr_accessor :stdin
           attr_accessor :stdout
           attr_accessor :stderr
+          attr_accessor :inpipe
+          attr_accessor :outpipe
           attr_accessor :wait_thr
 
-          YUM_HELPER = ::File.expand_path(::File.join(::File.dirname(__FILE__), "yum_helper.py")).freeze
+          YUM_HELPER = ::File.expand_path(::File.join(::File.dirname(__FILE__), "yum_helper.py 3 4")).freeze
 
           def yum_command
-            @yum_command ||= which("python", "python3", "python2", "python2.7") do |f|
+            @yum_command ||= which("python", "python2", "python2.7") do |f|
               shell_out("#{f} -c 'import yum'").exitstatus == 0
             end + " #{YUM_HELPER}"
           end
 
           def start
             ENV["PYTHONUNBUFFERED"] = "1"
-            @stdin, @stdout, @stderr, @wait_thr = Open3.popen3(yum_command)
+            @inpipe, inpipe_write = IO.pipe
+            outpipe_read, @outpipe = IO.pipe
+            @stdin, @stdout, @stderr, @wait_thr = Open3.popen3(yum_command, 3 => outpipe_read, 4 => inpipe_write, close_others: true)
           end
 
           def reap
@@ -53,6 +57,8 @@ class Chef
               stdin.close unless stdin.nil?
               stdout.close unless stdout.nil?
               stderr.close unless stderr.nil?
+              inpipe.close unless inpipe.nil?
+              outpipe.close unless outpipe.nil?
               wait_thr.value # this calls waitpit()
             end
           end
@@ -65,8 +71,8 @@ class Chef
             with_helper do
               json = build_version_query("versioncompare", [version1, version2])
               Chef::Log.debug "sending '#{json}' to python helper"
-              stdin.syswrite json + "\n"
-              stdout.sysread(4096).chomp.to_i
+              outpipe.syswrite json + "\n"
+              inpipe.sysread(4096).chomp.to_i
             end
           end
 
@@ -75,9 +81,8 @@ class Chef
             with_helper do
               json = build_query(action, provides, version, arch)
               Chef::Log.debug "sending '#{json}' to python helper"
-              stdin.syswrite json + "\n"
-              output = stdout.sysread(4096).chomp
-              # yum libraries like to barf stuff on stdout so take the last line
+              outpipe.syswrite json + "\n"
+              output = inpipe.sysread(4096).chomp
               Chef::Log.debug "got '#{output}' from python helper"
               version = parse_response(output.lines.last)
               Chef::Log.debug "parsed #{version} from python helper"
@@ -130,10 +135,14 @@ class Chef
             array.each_slice(3).map { |x| Version.new(*x) }.first
           end
 
-          def drain_stderr
+          def drain_fds
             output = ""
-            until IO.select([stderr], nil, nil, 0).nil?
-              output += stderr.sysread(4096).chomp
+            loop do
+              fds = IO.select([stderr, stdout], nil, nil, 0)
+              break if fds.nil?
+              fds.each do |fd|
+                output += fd.sysread(4096).chomp
+              end
             end
             output
           rescue
@@ -148,22 +157,22 @@ class Chef
               check
               ret = yield
             end
-            output = drain_stderr
+            output = drain_fds
             unless output.empty?
-              Chef::Log.debug "discarding output on stderr from python helper: #{output}"
+              Chef::Log.debug "discarding output on stderr/stdout from python helper: #{output}"
             end
             ret
           rescue EOFError, Errno::EPIPE, Timeout::Error, Errno::ESRCH => e
-            output = drain_stderr
+            output = drain_fds
             if ( max_retries -= 1 ) > 0
               unless output.empty?
-                Chef::Log.debug "discarding output on stderr from python helper: #{output}"
+                Chef::Log.debug "discarding output on stderr/stdout from python helper: #{output}"
               end
               restart
               retry
             else
               raise e if output.empty?
-              raise "yum-helper.py had stderr output:\n\n#{output}"
+              raise "yum-helper.py had stderr/stdout output:\n\n#{output}"
             end
           end
         end

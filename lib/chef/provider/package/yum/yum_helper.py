@@ -23,12 +23,12 @@ def get_base():
 
 def versioncompare(versions):
     if (versions[0] is None) or (versions[1] is None):
-        sys.stdout.write('0\n')
+        outpipe.write('0\n')
     else:
         (e1, v1, r1) = stringToVersion(versions[0])
         (e2, v2, r2) = stringToVersion(versions[1])
         evr_comparison = compareEVR((e1, v1, r1), (e2, v2, r2))
-        sys.stdout.write('{}\n'.format(evr_comparison))
+        outpipe.write('{}\n'.format(evr_comparison))
 
 def query(command):
     base = get_base()
@@ -59,12 +59,12 @@ def query(command):
         pkgs = e + m
 
     if not pkgs:
-        sys.stdout.write('{} nil nil\n'.format(command['provides'].split().pop(0)))
+        outpipe.write('{} nil nil\n'.format(command['provides'].split().pop(0)))
     else:
         # make sure we picked the package with the highest version
         pkgs = base.bestPackagesFromList(pkgs,arch=desired_arch,single_name=True)
         pkg = pkgs.pop(0)
-        sys.stdout.write('{} {}:{}-{} {}\n'.format(pkg.name, pkg.epoch, pkg.version, pkg.release, pkg.arch))
+        outpipe.write('{} {}:{}-{} {}\n'.format(pkg.name, pkg.epoch, pkg.version, pkg.release, pkg.arch))
 
 # the design of this helper is that it should try to be 'brittle' and fail hard and exit in order
 # to keep process tables clean.  additional error handling should probably be added to the retry loop
@@ -76,12 +76,15 @@ signal.signal(signal.SIGINT, exit_handler)
 signal.signal(signal.SIGHUP, exit_handler)
 signal.signal(signal.SIGPIPE, exit_handler)
 
+inpipe = os.fdopen(3)
+outpipe = os.fdopen(4)
+
 while 1:
     # kill self if we get orphaned (tragic)
     ppid = os.getppid()
     if ppid == 1:
         sys.exit(0)
-    line = sys.stdin.readline()
+    line = inpipe.readline()
     command = json.loads(line)
     if command['action'] == "whatinstalled":
         query(command)
