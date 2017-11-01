@@ -211,6 +211,7 @@ gpgcheck=0
 
     context "downgrades" do
       it "just work with DNF" do
+        pending "doesn't work on yum command line either"
         preinstall("chef_rpm-1.10-1.fc24.x86_64.rpm")
         yum_package.version("1.2")
         yum_package.run_action(:install)
@@ -488,6 +489,7 @@ gpgcheck=0
   describe ":upgrade" do
     context "downgrades" do
       it "just work with DNF" do
+        pending "doesn't work on yum command line either"
         preinstall("chef_rpm-1.10-1.fc24.x86_64.rpm")
         yum_package.version("1.2")
         yum_package.run_action(:install)
@@ -527,6 +529,7 @@ gpgcheck=0
       end
 
       it "downgrades the package" do
+        pending "doesn't work on yum command line either"
         preinstall("chef_rpm-1.10-1.fc24.x86_64.rpm")
         yum_package.package_name("#{CHEF_SPEC_ASSETS}/yumrepo/chef_rpm-1.2-1.fc24.x86_64.rpm")
         yum_package.run_action(:upgrade)
