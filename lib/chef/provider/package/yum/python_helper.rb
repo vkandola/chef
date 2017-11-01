@@ -36,7 +36,7 @@ class Chef
           attr_accessor :outpipe
           attr_accessor :wait_thr
 
-          YUM_HELPER = ::File.expand_path(::File.join(::File.dirname(__FILE__), "yum_helper.py 3 4")).freeze
+          YUM_HELPER = ::File.expand_path(::File.join(::File.dirname(__FILE__), "yum_helper.py")).freeze
 
           def yum_command
             @yum_command ||= which("python", "python2", "python2.7") do |f|
@@ -48,7 +48,12 @@ class Chef
             ENV["PYTHONUNBUFFERED"] = "1"
             @inpipe, inpipe_write = IO.pipe
             outpipe_read, @outpipe = IO.pipe
-            @stdin, @stdout, @stderr, @wait_thr = Open3.popen3(yum_command, 3 => outpipe_read, 4 => inpipe_write, close_others: true)
+            @stdin, @stdout, @stderr, @wait_thr = Open3.popen3("#{yum_command} #{outpipe_read.fileno} #{inpipe_write.fileno}", outpipe_read.fileno => outpipe_read, inpipe_write.fileno => inpipe_write, close_others: false)
+#puts "#{yum_command} #{outpipe_read.fileno} #{inpipe_write.fileno}"
+          #  @stdin, @stdout, @stderr, @wait_thr = Open3.popen3("#{yum_command} 3 4", 3 => outpipe_read, 4 => inpipe_write, close_others: true)
+            outpipe_read.close
+            inpipe_write.close
+
           end
 
           def reap

@@ -76,8 +76,12 @@ signal.signal(signal.SIGINT, exit_handler)
 signal.signal(signal.SIGHUP, exit_handler)
 signal.signal(signal.SIGPIPE, exit_handler)
 
-inpipe = os.fdopen(3)
-outpipe = os.fdopen(4)
+if len(sys.argv) < 3:
+  inpipe = sys.stdin
+  outpipe = sys.stdout
+else:
+  inpipe = os.fdopen(int(sys.argv[1]), "r")
+  outpipe = os.fdopen(int(sys.argv[2]), "w+")
 
 while 1:
     # kill self if we get orphaned (tragic)
@@ -85,6 +89,7 @@ while 1:
     if ppid == 1:
         sys.exit(0)
     line = inpipe.readline()
+    outpipe.write('DIGET nil nil\n')
     command = json.loads(line)
     if command['action'] == "whatinstalled":
         query(command)
