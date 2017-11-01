@@ -53,7 +53,6 @@ class Chef
           #  @stdin, @stdout, @stderr, @wait_thr = Open3.popen3("#{yum_command} 3 4", 3 => outpipe_read, 4 => inpipe_write, close_others: true)
             outpipe_read.close
             inpipe_write.close
-
           end
 
           def reap
@@ -143,7 +142,7 @@ class Chef
           def drain_fds
             output = ""
             loop do
-              fds = IO.select([stderr, stdout], nil, nil, 0)
+              fds = IO.select([stderr, stdout, inpipe], nil, nil, 0)
               break if fds.nil?
               fds.each do |fd|
                 output += fd.sysread(4096).chomp

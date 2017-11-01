@@ -64,31 +64,31 @@ gpgcheck=0
         flush_cache
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.10-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.10-1.fc24.x86_64$")
       end
 
       it "does not install if the package is installed" do
         preinstall("chef_rpm-1.10-1.fc24.x86_64.rpm")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be false
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.10-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.10-1.fc24.x86_64$")
       end
 
       it "does not install twice" do
         flush_cache
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.10-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.10-1.fc24.x86_64$")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be false
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.10-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.10-1.fc24.x86_64$")
       end
 
       it "does not install if the prior version package is installed" do
         preinstall("chef_rpm-1.2-1.fc24.x86_64.rpm")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be false
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.2-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.2-1.fc24.x86_64$")
       end
 
       it "does not install if the i686 package is installed" do
@@ -96,7 +96,7 @@ gpgcheck=0
         preinstall("chef_rpm-1.10-1.fc24.i686.rpm")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be false
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.10-1.fc24.i686")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.10-1.fc24.i686$")
       end
 
       it "does not install if the prior version i686 package is installed" do
@@ -104,7 +104,7 @@ gpgcheck=0
         preinstall("chef_rpm-1.2-1.fc24.i686.rpm")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be false
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.2-1.fc24.i686")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.2-1.fc24.i686$")
       end
     end
 
@@ -114,7 +114,7 @@ gpgcheck=0
         yum_package.package_name("chef_rpm-1.10")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.10-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.10-1.fc24.x86_64$")
       end
 
       it "works with an older version" do
@@ -122,7 +122,7 @@ gpgcheck=0
         yum_package.package_name("chef_rpm-1.2")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.2-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.2-1.fc24.x86_64$")
       end
 
       it "works with an evr" do
@@ -130,7 +130,7 @@ gpgcheck=0
         yum_package.package_name("chef_rpm-0:1.2-1.fc24")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.2-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.2-1.fc24.x86_64$")
       end
 
       it "works with a version glob" do
@@ -138,7 +138,7 @@ gpgcheck=0
         yum_package.package_name("chef_rpm-1*")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.10-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.10-1.fc24.x86_64$")
       end
 
       it "works with a name glob + version glob" do
@@ -146,7 +146,7 @@ gpgcheck=0
         yum_package.package_name("chef_rp*-1*")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.10-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.10-1.fc24.x86_64$")
       end
     end
 
@@ -158,7 +158,7 @@ gpgcheck=0
         yum_package.version("1.10")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.10-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.10-1.fc24.x86_64$")
       end
 
       it "matches with a glob" do
@@ -167,7 +167,7 @@ gpgcheck=0
         yum_package.version("1*")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.10-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.10-1.fc24.x86_64$")
       end
 
       it "matches the vr" do
@@ -176,7 +176,7 @@ gpgcheck=0
         yum_package.version("1.10-1.fc24")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.10-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.10-1.fc24.x86_64$")
       end
 
       it "matches the evr" do
@@ -185,7 +185,7 @@ gpgcheck=0
         yum_package.version("0:1.10-1.fc24")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.10-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.10-1.fc24.x86_64$")
       end
 
       it "matches with a vr glob" do
@@ -195,7 +195,7 @@ gpgcheck=0
         yum_package.version("1.10-1*")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.10-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.10-1.fc24.x86_64$")
       end
 
       it "matches with an evr glob" do
@@ -205,7 +205,7 @@ gpgcheck=0
         yum_package.version("0:1.10-1*")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.10-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.10-1.fc24.x86_64$")
       end
     end
 
@@ -216,7 +216,7 @@ gpgcheck=0
         yum_package.version("1.2")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.2-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.2-1.fc24.x86_64$")
       end
 
       it "throws a deprecation warning with allow_downgrade" do
@@ -227,7 +227,7 @@ gpgcheck=0
         yum_package.run_action(:install)
         yum_package.allow_downgrade true
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.2-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.2-1.fc24.x86_64$")
       end
     end
 
@@ -237,7 +237,7 @@ gpgcheck=0
         yum_package.package_name("chef_rpm.x86_64")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.10-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.10-1.fc24.x86_64$")
       end
 
       it "installs with 32-bit arch in the name" do
@@ -245,7 +245,7 @@ gpgcheck=0
         yum_package.package_name("chef_rpm.i686")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.10-1.fc24.i686")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.10-1.fc24.i686$")
       end
 
       it "installs with 64-bit arch in the property" do
@@ -254,7 +254,7 @@ gpgcheck=0
         yum_package.arch("x86_64")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.10-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.10-1.fc24.x86_64$")
       end
 
       it "installs with 32-bit arch in the property" do
@@ -263,7 +263,7 @@ gpgcheck=0
         yum_package.arch("i686")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.10-1.fc24.i686")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.10-1.fc24.i686$")
       end
     end
 
@@ -273,7 +273,7 @@ gpgcheck=0
         yum_package.package_name("chef_rpm >= 1.2")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.10-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.10-1.fc24.x86_64$")
       end
 
       it "when it is met, it does nothing" do
@@ -281,7 +281,7 @@ gpgcheck=0
         yum_package.package_name("chef_rpm >= 1.2")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be false
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.2-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.2-1.fc24.x86_64$")
       end
 
       it "when it is met, it does nothing" do
@@ -289,7 +289,7 @@ gpgcheck=0
         yum_package.package_name("chef_rpm >= 1.2")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be false
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.10-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.10-1.fc24.x86_64$")
       end
 
       it "with nothing intalled, it installs the latest version" do
@@ -297,7 +297,7 @@ gpgcheck=0
         yum_package.package_name("chef_rpm > 1.2")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.10-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.10-1.fc24.x86_64$")
       end
 
       it "when it is not met by an installed rpm, it upgrades" do
@@ -305,7 +305,7 @@ gpgcheck=0
         yum_package.package_name("chef_rpm > 1.2")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.10-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.10-1.fc24.x86_64$")
       end
 
       it "when it is met by an installed rpm, it does nothing" do
@@ -313,7 +313,7 @@ gpgcheck=0
         yum_package.package_name("chef_rpm > 1.2")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be false
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.10-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.10-1.fc24.x86_64$")
       end
 
       it "when there is no solution to the contraint" do
@@ -351,7 +351,7 @@ gpgcheck=0
         yum_package.source("#{CHEF_SPEC_ASSETS}/yumrepo/chef_rpm-1.2-1.fc24.x86_64.rpm")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.2-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.2-1.fc24.x86_64$")
       end
 
       it "installs the package when the name is a path to a file" do
@@ -359,7 +359,7 @@ gpgcheck=0
         yum_package.package_name("#{CHEF_SPEC_ASSETS}/yumrepo/chef_rpm-1.2-1.fc24.x86_64.rpm")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.2-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.2-1.fc24.x86_64$")
       end
 
       it "does not downgrade the package with :install" do
@@ -367,7 +367,7 @@ gpgcheck=0
         yum_package.package_name("#{CHEF_SPEC_ASSETS}/yumrepo/chef_rpm-1.2-1.fc24.x86_64.rpm")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be false
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.10-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.10-1.fc24.x86_64$")
       end
 
       it "does not upgrade the package with :install" do
@@ -375,7 +375,7 @@ gpgcheck=0
         yum_package.package_name("#{CHEF_SPEC_ASSETS}/yumrepo/chef_rpm-1.10-1.fc24.x86_64.rpm")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be false
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.2-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.2-1.fc24.x86_64$")
       end
 
       it "is idempotent when the package is already installed" do
@@ -383,7 +383,7 @@ gpgcheck=0
         yum_package.package_name("#{CHEF_SPEC_ASSETS}/yumrepo/chef_rpm-1.2-1.fc24.x86_64.rpm")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be false
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.2-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.2-1.fc24.x86_64$")
       end
     end
 
@@ -393,7 +393,7 @@ gpgcheck=0
         preinstall("chef_rpm-1.2-1.fc24.x86_64.rpm")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be false
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.2-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.2-1.fc24.x86_64$")
       end
 
       it "works with a local source" do
@@ -402,7 +402,7 @@ gpgcheck=0
         yum_package.package_name("#{CHEF_SPEC_ASSETS}/yumrepo/chef_rpm-1.2-1.fc24.x86_64.rpm")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.2-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.2-1.fc24.x86_64$")
       end
     end
 
@@ -412,8 +412,8 @@ gpgcheck=0
         yum_package.package_name([ "chef_rpm.x86_64", "chef_rpm.i686" ] )
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match(/chef_rpm-1.10-1.fc24.x86_64/)
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match(/chef_rpm-1.10-1.fc24.i686/)
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match(/^chef_rpm-1.10-1.fc24.x86_64$/)
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match(/^chef_rpm-1.10-1.fc24.i686$/)
       end
 
       it "does nothing if both are installed" do
@@ -429,8 +429,8 @@ gpgcheck=0
         yum_package.package_name([ "chef_rpm.x86_64", "chef_rpm.i686" ] )
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match(/chef_rpm-1.10-1.fc24.x86_64/)
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match(/chef_rpm-1.10-1.fc24.i686/)
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match(/^chef_rpm-1.10-1.fc24.x86_64$/)
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match(/^chef_rpm-1.10-1.fc24.i686$/)
       end
 
       it "installs the first rpm if the second is installed" do
@@ -438,8 +438,8 @@ gpgcheck=0
         yum_package.package_name([ "chef_rpm.x86_64", "chef_rpm.i686" ] )
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match(/chef_rpm-1.10-1.fc24.x86_64/)
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match(/chef_rpm-1.10-1.fc24.i686/)
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match(/^chef_rpm-1.10-1.fc24.x86_64$/)
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match(/^chef_rpm-1.10-1.fc24.i686$/)
       end
 
       # unlikely to work consistently correct, okay to deprecate the arch-array in favor of the arch in the name
@@ -449,8 +449,8 @@ gpgcheck=0
         yum_package.arch(%w{x86_64 i686})
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match(/chef_rpm-1.10-1.fc24.x86_64/)
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match(/chef_rpm-1.10-1.fc24.i686/)
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match(/^chef_rpm-1.10-1.fc24.x86_64$/)
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match(/^chef_rpm-1.10-1.fc24.i686$/)
       end
 
       # unlikely to work consistently correct, okay to deprecate the arch-array in favor of the arch in the name
@@ -460,8 +460,8 @@ gpgcheck=0
         yum_package.arch(%w{x86_64 i686})
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match(/chef_rpm-1.10-1.fc24.x86_64/)
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match(/chef_rpm-1.10-1.fc24.i686/)
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match(/^chef_rpm-1.10-1.fc24.x86_64$/)
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match(/^chef_rpm-1.10-1.fc24.i686$/)
       end
 
       # unlikely to work consistently correct, okay to deprecate the arch-array in favor of the arch in the name
@@ -471,8 +471,8 @@ gpgcheck=0
         yum_package.arch(%w{x86_64 i686})
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match(/chef_rpm-1.10-1.fc24.x86_64/)
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match(/chef_rpm-1.10-1.fc24.i686/)
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match(/^chef_rpm-1.10-1.fc24.x86_64$/)
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match(/^chef_rpm-1.10-1.fc24.i686$/)
       end
 
       # unlikely to work consistently correct, okay to deprecate the arch-array in favor of the arch in the name
@@ -494,7 +494,7 @@ gpgcheck=0
         yum_package.version("1.2")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.2-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.2-1.fc24.x86_64$")
       end
 
       it "throws a deprecation warning with allow_downgrade" do
@@ -505,7 +505,7 @@ gpgcheck=0
         yum_package.run_action(:install)
         yum_package.allow_downgrade true
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.2-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.2-1.fc24.x86_64$")
       end
     end
 
@@ -517,7 +517,7 @@ gpgcheck=0
         yum_package.source("#{CHEF_SPEC_ASSETS}/yumrepo/chef_rpm-1.2-1.fc24.x86_64.rpm")
         yum_package.run_action(:upgrade)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.2-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.2-1.fc24.x86_64$")
       end
 
       it "installs the package when the name is a path to a file" do
@@ -525,7 +525,7 @@ gpgcheck=0
         yum_package.package_name("#{CHEF_SPEC_ASSETS}/yumrepo/chef_rpm-1.2-1.fc24.x86_64.rpm")
         yum_package.run_action(:upgrade)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.2-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.2-1.fc24.x86_64$")
       end
 
       it "downgrades the package" do
@@ -534,7 +534,7 @@ gpgcheck=0
         yum_package.package_name("#{CHEF_SPEC_ASSETS}/yumrepo/chef_rpm-1.2-1.fc24.x86_64.rpm")
         yum_package.run_action(:upgrade)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.2-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.2-1.fc24.x86_64$")
       end
 
       it "upgrades the package" do
@@ -542,7 +542,7 @@ gpgcheck=0
         yum_package.package_name("#{CHEF_SPEC_ASSETS}/yumrepo/chef_rpm-1.10-1.fc24.x86_64.rpm")
         yum_package.run_action(:upgrade)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.10-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.10-1.fc24.x86_64$")
       end
 
       it "is idempotent when the package is already installed" do
@@ -550,7 +550,7 @@ gpgcheck=0
         yum_package.package_name("#{CHEF_SPEC_ASSETS}/yumrepo/chef_rpm-1.2-1.fc24.x86_64.rpm")
         yum_package.run_action(:upgrade)
         expect(yum_package.updated_by_last_action?).to be false
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.2-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.2-1.fc24.x86_64$")
       end
     end
 
@@ -561,7 +561,7 @@ gpgcheck=0
         yum_package.package_name("#{CHEF_SPEC_ASSETS}/yumrepo/chef_rpm-1.2-1.fc24.x86_64.rpm")
         yum_package.run_action(:upgrade)
         expect(yum_package.updated_by_last_action?).to be false
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.2-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.2-1.fc24.x86_64$")
       end
 
       it "works with a local source" do
@@ -570,7 +570,7 @@ gpgcheck=0
         yum_package.package_name("#{CHEF_SPEC_ASSETS}/yumrepo/chef_rpm-1.2-1.fc24.x86_64.rpm")
         yum_package.run_action(:upgrade)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.2-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.2-1.fc24.x86_64$")
       end
     end
   end
@@ -582,31 +582,31 @@ gpgcheck=0
         flush_cache
         yum_package.run_action(:remove)
         expect(yum_package.updated_by_last_action?).to be false
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("package chef_rpm is not installed")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^package chef_rpm is not installed$")
       end
 
       it "removes the package if the package is installed" do
         preinstall("chef_rpm-1.10-1.fc24.x86_64.rpm")
         yum_package.run_action(:remove)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("package chef_rpm is not installed")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^package chef_rpm is not installed$")
       end
 
       it "does not remove the package twice" do
         preinstall("chef_rpm-1.10-1.fc24.x86_64.rpm")
         yum_package.run_action(:remove)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("package chef_rpm is not installed")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^package chef_rpm is not installed$")
         yum_package.run_action(:remove)
         expect(yum_package.updated_by_last_action?).to be false
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("package chef_rpm is not installed")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^package chef_rpm is not installed$")
       end
 
       it "removes the package if the prior version package is installed" do
         preinstall("chef_rpm-1.2-1.fc24.x86_64.rpm")
         yum_package.run_action(:remove)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("package chef_rpm is not installed")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^package chef_rpm is not installed$")
       end
 
       it "removes the package if the i686 package is installed" do
@@ -614,7 +614,7 @@ gpgcheck=0
         preinstall("chef_rpm-1.10-1.fc24.i686.rpm")
         yum_package.run_action(:remove)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("package chef_rpm is not installed")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^package chef_rpm is not installed$")
       end
 
       it "removes the package if the prior version i686 package is installed" do
@@ -622,7 +622,7 @@ gpgcheck=0
         preinstall("chef_rpm-1.2-1.fc24.i686.rpm")
         yum_package.run_action(:remove)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("package chef_rpm is not installed")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^package chef_rpm is not installed$")
       end
     end
 
@@ -632,35 +632,35 @@ gpgcheck=0
         flush_cache
         yum_package.run_action(:remove)
         expect(yum_package.updated_by_last_action?).to be false
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("package chef_rpm is not installed")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^package chef_rpm is not installed$")
       end
 
       it "removes the package if the package is installed" do
         preinstall("chef_rpm-1.10-1.fc24.x86_64.rpm")
         yum_package.run_action(:remove)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("package chef_rpm is not installed")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^package chef_rpm is not installed$")
       end
 
       it "removes the package if the prior version package is installed" do
         preinstall("chef_rpm-1.2-1.fc24.x86_64.rpm")
         yum_package.run_action(:remove)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("package chef_rpm is not installed")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^package chef_rpm is not installed$")
       end
 
       it "does nothing if the i686 package is installed" do
         preinstall("chef_rpm-1.10-1.fc24.i686.rpm")
         yum_package.run_action(:remove)
         expect(yum_package.updated_by_last_action?).to be false
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.10-1.fc24.i686")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.10-1.fc24.i686$")
       end
 
       it "does nothing if the prior version i686 package is installed" do
         preinstall("chef_rpm-1.2-1.fc24.i686.rpm")
         yum_package.run_action(:remove)
         expect(yum_package.updated_by_last_action?).to be false
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.2-1.fc24.i686")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.2-1.fc24.i686$")
       end
     end
 
@@ -670,7 +670,7 @@ gpgcheck=0
         preinstall("chef_rpm-1.10-1.fc24.x86_64.rpm", "chef_rpm-1.10-1.fc24.i686.rpm")
         yum_package.run_action(:remove)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.10-1.fc24.x86_64")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.10-1.fc24.x86_64$")
       end
     end
 
@@ -680,7 +680,7 @@ gpgcheck=0
         preinstall("chef_rpm-1.2-1.fc24.x86_64.rpm")
         yum_package.run_action(:remove)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("package chef_rpm is not installed")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^package chef_rpm is not installed$")
       end
     end
   end
