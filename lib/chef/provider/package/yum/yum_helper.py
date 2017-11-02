@@ -59,7 +59,10 @@ def query(command):
     else:
         obj = base.pkgSack
 
-    if do_nevra:
+    if any(elem in command['provides'] for elem in r"<=>"):
+        # if provides has '<', '=', or '>'
+        pkgs = obj.searchProvides(command['provides'])
+    elif do_nevra:
         pkgs = obj.searchNevra(**args)
     else:
         pats = [command['provides']]
