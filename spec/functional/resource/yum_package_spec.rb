@@ -162,6 +162,9 @@ gpgcheck=0
       end
 
       it "matches with a glob" do
+        # we are unlikely to ever fix this.  if you've found this comment you should use e.g. "tcpdump-4*" in
+        # the name field rather than trying to use a name of "tcpdump" and a version of "4*".
+        pending "this does not work, is not easily supported by the underlying yum libraries, but does work in the new dnf_package provider"
         flush_cache
         yum_package.package_name("chef_rpm")
         yum_package.version("1*")
