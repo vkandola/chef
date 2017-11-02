@@ -222,6 +222,7 @@ gpgcheck=0
       it "throws a deprecation warning with allow_downgrade" do
         Chef::Config[:treat_deprecation_warnings_as_errors] = false
         #expect(Chef).to receive(:deprecated).with(:dnf_package_allow_downgrade, /^the allow_downgrade property on the dnf_package provider is not used/)
+        pending "doesn't work on yum command line either"
         preinstall("chef_rpm-1.10-1.fc24.x86_64.rpm")
         yum_package.version("1.2")
         yum_package.run_action(:install)
@@ -500,6 +501,7 @@ gpgcheck=0
       it "throws a deprecation warning with allow_downgrade" do
         Chef::Config[:treat_deprecation_warnings_as_errors] = false
         #expect(Chef).to receive(:deprecated).with(:dnf_package_allow_downgrade, /^the allow_downgrade property on the dnf_package provider is not used/)
+        pending "doesn't work on yum command line either"
         preinstall("chef_rpm-1.10-1.fc24.x86_64.rpm")
         yum_package.version("1.2")
         yum_package.run_action(:install)
