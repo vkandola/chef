@@ -36,15 +36,20 @@ def query(command):
     base = get_base()
 
     args = { 'name': command['provides'] }
+    do_nevra = False
     if 'epoch' in command:
         args['epoch'] = command['epoch']
+        do_nevra = True
     if 'version' in command:
         args['version'] = command['version']
+        do_nevra = True
     if 'release' in command:
         args['release'] = command['release']
+        do_nevra = True
     if 'arch' in command:
         desired_arch = command['arch']
         args['arch'] = command['arch']
+        do_nevra = True
     else:
         desired_arch = getBaseArch()
 
@@ -54,11 +59,11 @@ def query(command):
     else:
         obj = base.pkgSack
 
-    pats = [command['provides']]
-    pkgs = obj.returnPackages(patterns=pats)
-
-    if not pkgs:
+    if do_nevra:
         pkgs = obj.searchNevra(**args)
+    else:
+        pats = [command['provides']]
+        pkgs = obj.returnPackages(patterns=pats)
 
     if not pkgs:
         outpipe.write('{} nil nil\n'.format(command['provides'].split().pop(0)))
