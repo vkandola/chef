@@ -54,11 +54,11 @@ def query(command):
     else:
         obj = base.pkgSack
 
-    pkgs = obj.searchNevra(**args)
+    pats = [command['provides']]
+    pkgs = obj.returnPackages(patterns=pats)
 
     if not pkgs:
-        e, m, _ = obj.matchPackageNames(command['provides'])
-        pkgs = e + m
+        pkgs = obj.searchNevra(**args)
 
     if not pkgs:
         outpipe.write('{} nil nil\n'.format(command['provides'].split().pop(0)))
