@@ -41,10 +41,10 @@ def query(command):
         args['epoch'] = command['epoch']
         do_nevra = True
     if 'version' in command:
-        args['version'] = command['version']
+        args['ver'] = command['version']
         do_nevra = True
     if 'release' in command:
-        args['release'] = command['release']
+        args['rel'] = command['release']
         do_nevra = True
     if 'arch' in command:
         desired_arch = command['arch']
