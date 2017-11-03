@@ -29,7 +29,7 @@ def versioncompare(versions):
         (e1, v1, r1) = stringToVersion(versions[0])
         (e2, v2, r2) = stringToVersion(versions[1])
         evr_comparison = compareEVR((e1, v1, r1), (e2, v2, r2))
-        outpipe.write('{}\n'.format(evr_comparison))
+        outpipe.write('{0}\n'.format(evr_comparison))
         outpipe.flush()
 
 def query(command):
@@ -69,14 +69,13 @@ def query(command):
         pkgs = obj.returnPackages(patterns=pats)
 
     if not pkgs:
-        outpipe.write('{} nil nil\n'.format(command['provides'].split().pop(0)))
+        outpipe.write('{0} nil nil\n'.format(command['provides'].split().pop(0)))
         outpipe.flush()
     else:
         # make sure we picked the package with the highest version
         pkgs = base.bestPackagesFromList(pkgs,arch=desired_arch,single_name=True)
         pkg = pkgs.pop(0)
-        sys.stdout.write(str(pkg))
-        outpipe.write('{} {}:{}-{} {}\n'.format(pkg.name, pkg.epoch, pkg.version, pkg.release, pkg.arch))
+        outpipe.write('{0} {1}:{2}-{3} {4}\n'.format(pkg.name, pkg.epoch, pkg.version, pkg.release, pkg.arch))
         outpipe.flush()
 
 # the design of this helper is that it should try to be 'brittle' and fail hard and exit in order
