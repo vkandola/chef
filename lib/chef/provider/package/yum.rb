@@ -22,6 +22,8 @@ require "chef/mixin/shell_out"
 require "chef/mixin/get_source_from_package"
 require "chef/provider/package/yum/python_helper"
 require "chef/provider/package/yum/version"
+# the stubs in the YumCache class are still an external API
+require "chef/provider/package/yum/yum_cache"
 
 class Chef
   class Provider
