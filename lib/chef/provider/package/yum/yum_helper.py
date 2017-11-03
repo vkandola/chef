@@ -75,6 +75,7 @@ def query(command):
         # make sure we picked the package with the highest version
         pkgs = base.bestPackagesFromList(pkgs,arch=desired_arch,single_name=True)
         pkg = pkgs.pop(0)
+        sys.stdout.write(str(pkg))
         outpipe.write('{} {}:{}-{} {}\n'.format(pkg.name, pkg.epoch, pkg.version, pkg.release, pkg.arch))
         outpipe.flush()
 
