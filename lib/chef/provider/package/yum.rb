@@ -91,6 +91,9 @@ class Chef
         def install_package(names, versions)
           if new_resource.source
             yum(options, "-y install", new_resource.source)
+          elsif new_resource.allow_downgrade && names.length == 1
+            resolved_names = names.each_with_index.map { |name, i| available_version(i).to_s unless name.nil? }
+            yum(options, "-y downgrade", resolved_names)
           else
             resolved_names = names.each_with_index.map { |name, i| available_version(i).to_s unless name.nil? }
             yum(options, "-y install", resolved_names)

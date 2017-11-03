@@ -213,23 +213,19 @@ gpgcheck=0
     end
 
     context "downgrades" do
-      it "just work with DNF" do
-        pending "doesn't work on yum command line either"
+      it "will not work without allow_downgrade" do
         preinstall("chef_rpm-1.10-1.fc24.x86_64.rpm")
-        yum_package.version("1.2")
+        yum_package.version("1.2-1.fc24")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.2-1.fc24.x86_64$")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.10-1.fc24.x86_64$")
       end
 
-      it "throws a deprecation warning with allow_downgrade" do
-        Chef::Config[:treat_deprecation_warnings_as_errors] = false
-        #expect(Chef).to receive(:deprecated).with(:dnf_package_allow_downgrade, /^the allow_downgrade property on the dnf_package provider is not used/)
-        pending "doesn't work on yum command line either"
+      it "downgrades the package when allow_downgrade" do
         preinstall("chef_rpm-1.10-1.fc24.x86_64.rpm")
-        yum_package.version("1.2")
+        yum_package.version("1.2-1.fc24")
         yum_package.run_action(:install)
-        yum_package.allow_downgrade true
+        yum_package.allow_downgrade
         expect(yum_package.updated_by_last_action?).to be true
         expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.2-1.fc24.x86_64$")
       end
@@ -491,28 +487,6 @@ gpgcheck=0
   end
 
   describe ":upgrade" do
-    context "downgrades" do
-      it "just work with DNF" do
-        pending "doesn't work on yum command line either"
-        preinstall("chef_rpm-1.10-1.fc24.x86_64.rpm")
-        yum_package.version("1.2")
-        yum_package.run_action(:install)
-        expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.2-1.fc24.x86_64$")
-      end
-
-      it "throws a deprecation warning with allow_downgrade" do
-        Chef::Config[:treat_deprecation_warnings_as_errors] = false
-        #expect(Chef).to receive(:deprecated).with(:dnf_package_allow_downgrade, /^the allow_downgrade property on the dnf_package provider is not used/)
-        pending "doesn't work on yum command line either"
-        preinstall("chef_rpm-1.10-1.fc24.x86_64.rpm")
-        yum_package.version("1.2")
-        yum_package.run_action(:install)
-        yum_package.allow_downgrade true
-        expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.2-1.fc24.x86_64$")
-      end
-    end
 
     context "with source arguments" do
       it "installs the package when using the source argument" do
