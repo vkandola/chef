@@ -141,16 +141,14 @@ class Chef
 
           def drain_fds
             output = ""
-            loop do
-              fds = IO.select([stderr, stdout, inpipe], nil, nil, 0)
-              break if fds.nil?
+            fds, _, _ = IO.select([stderr, stdout, inpipe], nil, nil, 0)
+            unless fds.nil?
               fds.each do |fd|
-                output += fd.sysread(4096).chomp
+                output += fd.sysread(4096) rescue ""
               end
             end
             output
-          rescue
-            # we must rescue EOFError, and we don't much care about errors on stderr anyway
+          rescue => e
             output
           end
 
