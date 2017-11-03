@@ -141,7 +141,7 @@ class Chef
 
           def drain_fds
             output = ""
-            fds, _, _ = IO.select([stderr, stdout, inpipe], nil, nil, 0)
+            fds, = IO.select([stderr, stdout, inpipe], nil, nil, 0)
             unless fds.nil?
               fds.each do |fd|
                 output += fd.sysread(4096) rescue ""
