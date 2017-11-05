@@ -213,16 +213,6 @@ gpgcheck=0
     end
 
     context "downgrades" do
-      it "does not downgrade the package without allow_downgrade" do
-        flush_cache
-        preinstall("chef_rpm-1.10-1.fc24.x86_64.rpm")
-        yum_package.package_name("chef_rpm")
-        yum_package.version("1.2-1.fc24")
-        yum_package.run_action(:install)
-        expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.10-1.fc24.x86_64$$")
-      end
-
       it "downgrades the package when allow_downgrade" do
         flush_cache
         preinstall("chef_rpm-1.10-1.fc24.x86_64.rpm")

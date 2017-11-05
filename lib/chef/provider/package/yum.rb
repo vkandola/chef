@@ -91,14 +91,44 @@ class Chef
         end
 
         def install_package(names, versions)
+
+          method = nil
+          methods = []
+          names.zip(current_version_array, versions) do |n, cv, v, a|
+
+            next if n.nil?
+
+            method = "install"
+
+            # We need to be checking for packages allowing multiple installs here, but aren't.
+
+            if version_compare(cv,v) == 1
+              # We allow downgrading only in the evenit of single-package
+              # rules where the user explicitly allowed it
+              if new_resource.allow_downgrade
+                method = "downgrade"
+              else
+                # we bail like yum when the package is older
+                raise Chef::Exceptions::Package, "Installed package #{yum_syntax(n, cv, a)} is newer " \
+                    "than candidate package #{yum_syntax(n, v, a)}"
+              end
+            end
+            # methods don't count for packages we won't be touching
+            next if version_compare(cv,v) == 0
+            methods << method
+          end
+
+          # We could split this up into two commands if we wanted to, but
+          # for now, just don't support this.
+          if methods.uniq.length > 1
+            raise Chef::Exceptions::Package, "Multipackage rule has a mix of upgrade and downgrade packages. Cannot proceed."
+          end
+
           if new_resource.source
             yum(options, "-y install", new_resource.source)
-          elsif new_resource.allow_downgrade && names.length == 1
-            resolved_names = names.each_with_index.map { |name, i| available_version(i).to_s unless name.nil? }
-            yum(options, "-y downgrade", resolved_names)
           else
             resolved_names = names.each_with_index.map { |name, i| available_version(i).to_s unless name.nil? }
-            yum(options, "-y install", resolved_names)
+            yum(options, "-y #{method}", resolved_names)
           end
           flushcache
         end
@@ -119,6 +149,14 @@ class Chef
         end
 
         private
+
+        # Generate the yum syntax for the package
+        def yum_syntax(name, version, arch)
+          s = name
+          s += "-#{version}" if version
+          s += ".#{arch}" if arch
+          s
+        end
 
         def resolve_source_to_version_obj
           shell_out_with_timeout!("rpm -qp --queryformat '%{NAME} %{EPOCH} %{VERSION} %{RELEASE} %{ARCH}\n' #{new_resource.source}").stdout.each_line do |line|

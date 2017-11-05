@@ -22,8 +22,14 @@ def get_base():
     return base
 
 def versioncompare(versions):
-    if (versions[0] is None) or (versions[1] is None):
+    if (versions[0] is None) and (versions[1] is None):
         outpipe.write('0\n')
+        outpipe.flush()
+    elif versions[0] is None:
+        outpipe.write('-1\n')
+        outpipe.flush()
+    elif versions[1] is None:
+        outpipe.write('1\n')
         outpipe.flush()
     else:
         (e1, v1, r1) = stringToVersion(versions[0])
@@ -64,6 +70,8 @@ def query(command):
         pkgs = obj.searchProvides(command['provides'])
     elif do_nevra:
         pkgs = obj.searchNevra(**args)
+        if (command['action'] == "whatinstalled") and (not pkgs):
+          pkgs = obj.searchNevra(name=args['name'], arch=desired_arch)
     else:
         pats = [command['provides']]
         pkgs = obj.returnPackages(patterns=pats)
