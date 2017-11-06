@@ -100,19 +100,21 @@ class Chef
 
             method = "install"
 
-            # We need to be checking for packages allowing multiple installs here, but aren't.
-
-            if version_compare(cv,v) == 1
-              # We allow downgrading only in the evenit of single-package
-              # rules where the user explicitly allowed it
-              if new_resource.allow_downgrade
-                method = "downgrade"
-              else
-                # we bail like yum when the package is older
-                raise Chef::Exceptions::Package, "Installed package #{yum_syntax(n, cv, a)} is newer " \
-                    "than candidate package #{yum_syntax(n, v, a)}"
+            # If this is a package like the kernel that can be installed multiple times, we'll skip over this logic
+            unless python_helper.install_only_packages(n)
+              if version_compare(cv,v) == 1
+                  # We allow downgrading only in the evenit of single-package
+                  # rules where the user explicitly allowed it
+                if new_resource.allow_downgrade
+                  method = "downgrade"
+                else
+                  # we bail like yum when the package is older
+                  raise Chef::Exceptions::Package, "Installed package #{yum_syntax(n, cv, a)} is newer " \
+                      "than candidate package #{yum_syntax(n, v, a)}"
+                end
               end
             end
+
             # methods don't count for packages we won't be touching
             next if version_compare(cv,v) == 0
             methods << method

@@ -80,6 +80,21 @@ class Chef
             end
           end
 
+          def install_only_packages(name)
+            with_helper do
+              json = build_ipkgs_query("installonlypkgs", name)
+              Chef::Log.debug "sending '#{json}' to python helper"
+              outpipe.syswrite json + "\n"
+              output = inpipe.sysread(4096).chomp
+              Chef::Log.debug "got '#{output}' from python helper"
+              if output == "False"
+                return false
+              elsif output == "True"
+                return true
+              end
+            end
+          end
+
           # @returns Array<Version>
           def query(action, provides, version = nil, arch = nil)
             with_helper do
@@ -131,6 +146,12 @@ class Chef
           def build_version_query(action, versions)
             hash = { "action" => action }
             hash["versions"] = versions
+            FFI_Yajl::Encoder.encode(hash)
+          end
+
+          def build_ipkgs_query(action, package)
+            hash = { "action" => action }
+            hash["package"] = package
             FFI_Yajl::Encoder.encode(hash)
           end
 

@@ -38,6 +38,17 @@ def versioncompare(versions):
         outpipe.write('{0}\n'.format(evr_comparison))
         outpipe.flush()
 
+def install_only_packages(name):
+    iopkgs = base.conf.installonlypkgs
+
+    if name in iopkgs:
+      in_pkgs = True
+    else:
+      in_pkgs = False
+
+    outpipe.write('{0}\n'.format(in_pkgs))
+    outpipe.flush()
+
 def query(command):
     base = get_base()
 
@@ -116,5 +127,7 @@ while 1:
         query(command)
     elif command['action'] == "versioncompare":
         versioncompare(command['versions'])
+    elif command['action'] == "installonlypkgs":
+         install_only_packages(command['package'])
     else:
         raise RuntimeError("bad command")
