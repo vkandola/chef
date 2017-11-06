@@ -491,8 +491,8 @@ class Chef
               when :install
 
                 if new_version
-                  if version_requirement_satisfied?(current_version, candidate_version)
-                    Chef::Log.debug("#{new_resource} #{package_name} #{current_version} satisifies #{candidate_version} requirement")
+                  if version_requirement_satisfied?(current_version, new_version)
+                    Chef::Log.debug("#{new_resource} #{package_name} #{current_version} satisifies #{new_version} requirement")
                     target_version_array.push(nil)
                   else
                     Chef::Log.debug("#{new_resource} #{package_name} #{current_version} needs updating to #{new_version}")
