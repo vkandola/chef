@@ -125,12 +125,20 @@ gpgcheck=0
         expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.2-1.fc24.x86_64$")
       end
 
-      it "works with an evr" do
+      it "works with an evra" do
         flush_cache
-        yum_package.package_name("chef_rpm-0:1.2-1.fc24")
+        yum_package.package_name("chef_rpm-0:1.2-1.fc24.x86_64")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be true
-        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.2-1.fc24.x86_64$")
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.2-1.fc24.x86_64")
+      end
+
+      it "works with version and release" do
+        flush_cache
+        yum_package.package_name("chef_rpm-1.2-1.fc24")
+        yum_package.run_action(:install)
+        expect(yum_package.updated_by_last_action?).to be true
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to eql("chef_rpm-1.2-1.fc24.x86_64")
       end
 
       it "works with a version glob" do
