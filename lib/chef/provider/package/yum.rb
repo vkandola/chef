@@ -94,7 +94,7 @@ class Chef
 
           method = nil
           methods = []
-          names.zip(current_version_array, versions) do |n, cv, v, a|
+          names.zip(current_version_array, candidate_version_array) do |n, cv, v, a|
 
             next if n.nil?
 

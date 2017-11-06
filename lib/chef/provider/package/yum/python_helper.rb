@@ -76,7 +76,9 @@ class Chef
               json = build_version_query("versioncompare", [version1, version2])
               Chef::Log.debug "sending '#{json}' to python helper"
               outpipe.syswrite json + "\n"
-              inpipe.sysread(4096).chomp.to_i
+              output = inpipe.sysread(4096).chomp.to_i
+              Chef::Log.debug "got '#{output}' from python helper"
+              return output
             end
           end
 
