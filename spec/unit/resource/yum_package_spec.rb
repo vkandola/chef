@@ -1,5 +1,5 @@
 #
-# Copyright:: Copyright 2016, Chef Software, Inc.
+# Copyright:: Copyright 2016-2017, Chef Software Inc.
 # License:: Apache License, Version 2.0
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -38,7 +38,7 @@ describe Chef::Resource::YumPackage, "arch" do
 
   it "should set the arch variable to whatever is passed in" do
     @resource.arch("i386")
-    expect(@resource.arch).to eql(["i386"])
+    expect(@resource.arch).to eql("i386")
   end
 end
 
