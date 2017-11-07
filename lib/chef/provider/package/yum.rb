@@ -152,6 +152,11 @@ class Chef
 
         private
 
+        def version_equals?(v1, v2)
+          return false unless v1 && v2
+          version_compare(v1,v2) == 0
+        end
+
         # Generate the yum syntax for the package
         def yum_syntax(name, version, arch)
           s = name
