@@ -55,14 +55,10 @@ def versioncompare(versions):
         outpipe.flush()
 
 def install_only_packages(name):
-    iopkgs = base.conf.installonlypkgs
-
-    if name in iopkgs:
-      in_pkgs = True
+    if name in base.conf.installonlypkgs:
+      outpipe.write('True')
     else:
-      in_pkgs = False
-
-    outpipe.write('{0}\n'.format(in_pkgs))
+      outpipe.write('False')
     outpipe.flush()
 
 def query(command):
@@ -92,16 +88,23 @@ def query(command):
     else:
         obj = base.pkgSack
 
-    if any(elem in command['provides'] for elem in r"<=>"):
-        # if provides has '<', '=', or '>'
-        pkgs = obj.searchProvides(command['provides'])
-    elif do_nevra:
+    if do_nevra:
         pkgs = obj.searchNevra(**args)
         if (command['action'] == "whatinstalled") and (not pkgs):
           pkgs = obj.searchNevra(name=args['name'], arch=desired_arch)
     else:
         pats = [command['provides']]
         pkgs = obj.returnPackages(patterns=pats)
+
+        if not pkgs:
+            # handles wildcards
+            pkgs = obj.searchProvides(command['provides'])
+
+        if not pkgs:
+            if any(elem in command['provides'] for elem in r"<=>"):
+                # handles flags (<, >, =, etc) and versions, but no wildcareds 
+                pkgs = obj.getProvides(*command['provides'].split())
+
 
     if not pkgs:
         outpipe.write('{0} nil nil\n'.format(command['provides'].split().pop(0)))
