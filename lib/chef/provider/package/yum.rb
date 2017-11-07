@@ -91,7 +91,6 @@ class Chef
         end
 
         def install_package(names, versions)
-
           method = nil
           methods = []
           names.zip(current_version_array, candidate_version_array) do |n, cv, v, a|
@@ -102,7 +101,7 @@ class Chef
 
             # If this is a package like the kernel that can be installed multiple times, we'll skip over this logic
             unless python_helper.install_only_packages(n)
-              if version_compare(cv,v) == 1
+              if version_compare(cv, v) == 1
                   # We allow downgrading only in the evenit of single-package
                   # rules where the user explicitly allowed it
                 if new_resource.allow_downgrade
@@ -116,7 +115,7 @@ class Chef
             end
 
             # methods don't count for packages we won't be touching
-            next if version_compare(cv,v) == 0
+            next if version_compare(cv, v) == 0
             methods << method
           end
 
@@ -154,7 +153,7 @@ class Chef
 
         def version_equals?(v1, v2)
           return false unless v1 && v2
-          version_compare(v1,v2) == 0
+          version_compare(v1, v2) == 0
         end
 
         # Generate the yum syntax for the package
