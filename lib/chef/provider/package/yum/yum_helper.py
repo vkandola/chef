@@ -64,6 +64,16 @@ def install_only_packages(name):
 def query(command):
     base = get_base()
 
+    # Handle any repocontrols passed in with our options
+    if 'repocontrol' in command:
+      repocontrols = command['repocontrol'].split()
+      for control in repocontrols:
+        repocommand, reponame = control.split("=")
+        if "enablerepo" in repocommand:
+          base.repos.enableRepo(reponame)
+        elif "disablerepo" in repocommand:
+          base.repos.disableRepo(reponame)
+
     args = { 'name': command['provides'] }
     do_nevra = False
     if 'epoch' in command:

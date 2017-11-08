@@ -59,6 +59,7 @@ class Chef
         end
 
         def load_current_resource
+          manage_extra_repo_control
           flushcache if new_resource.flush_cache[:before]
 
           @current_resource = Chef::Resource::YumPackage.new(new_resource.name)
@@ -144,6 +145,23 @@ class Chef
         end
 
         private
+
+        def manage_extra_repo_control
+          if new_resource.options
+            repo_control = []
+            new_resource.options.each do |opt|
+              repo_control << opt if opt =~ /--(enable|disable)repo=.+/
+            end
+
+            if !repo_control.empty?
+              python_helper.extra_repo_control = repo_control.join(" ")
+            else
+              python_helper.extra_repo_control = nil
+            end
+          else
+            python_helper.extra_repo_control = nil
+          end
+        end
 
         def version_equals?(v1, v2)
           return false unless v1 && v2

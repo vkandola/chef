@@ -35,6 +35,7 @@ class Chef
           attr_accessor :inpipe
           attr_accessor :outpipe
           attr_accessor :wait_thr
+          attr_accessor :extra_repo_control
 
           YUM_HELPER = ::File.expand_path(::File.join(::File.dirname(__FILE__), "yum_helper.py")).freeze
 
@@ -86,7 +87,9 @@ class Chef
 
           # @returns Array<Version>
           def package_query(action, provides, version = nil, arch = nil)
-            query_output = query(action, { "provides" => provides, "version" => version, "arch" => arch })
+            parameters = { "provides" => provides, "version" => version, "arch" => arch }
+            parameters["repocontrol"] = @extra_repo_control unless @extra_repo_control.nil?
+            query_output = query(action, parameters)
             version = parse_response(query_output.lines.last)
             Chef::Log.debug "parsed #{version} from python helper"
             version
@@ -162,6 +165,7 @@ class Chef
           end
 
           def with_helper
+            @extra_repo_control = nil
             max_retries ||= 5
             ret = nil
             Timeout.timeout(600) do
