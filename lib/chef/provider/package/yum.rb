@@ -104,13 +104,7 @@ class Chef
               if version_compare(cv, v) == 1
                   # We allow downgrading only in the evenit of single-package
                   # rules where the user explicitly allowed it
-                if new_resource.allow_downgrade
-                  method = "downgrade"
-                else
-                  # we bail like yum when the package is older
-                  raise Chef::Exceptions::Package, "Installed package #{yum_syntax(n, cv, a)} is newer " \
-                      "than candidate package #{yum_syntax(n, v, a)}"
-                end
+                method = "downgrade" if new_resource.allow_downgrade
               end
             end
 
@@ -186,7 +180,7 @@ class Chef
           @available_version[index] ||= if new_resource.source
                                           resolve_source_to_version_obj
                                         else
-                                          python_helper.query(:whatavailable, package_name_array[index], safe_version_array[index], safe_arch_array[index])
+                                          python_helper.package_query(:whatavailable, package_name_array[index], safe_version_array[index], safe_arch_array[index])
                                         end
 
           @available_version[index]
@@ -196,9 +190,9 @@ class Chef
         def installed_version(index)
           @installed_version ||= []
           @installed_version[index] ||= if new_resource.source
-                                          python_helper.query(:whatinstalled, available_version(index).name, safe_version_array[index], safe_arch_array[index])
+                                          python_helper.package_query(:whatinstalled, available_version(index).name, safe_version_array[index], safe_arch_array[index])
                                         else
-                                          python_helper.query(:whatinstalled, package_name_array[index], safe_version_array[index], safe_arch_array[index])
+                                          python_helper.package_query(:whatinstalled, package_name_array[index], safe_version_array[index], safe_arch_array[index])
                                         end
           @installed_version[index]
         end

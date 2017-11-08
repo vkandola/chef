@@ -72,43 +72,24 @@ class Chef
           end
 
           def compare_versions(version1, version2)
-            with_helper do
-              json = build_version_query("versioncompare", [version1, version2])
-              Chef::Log.debug "sending '#{json}' to python helper"
-              outpipe.syswrite json + "\n"
-              output = inpipe.sysread(4096).chomp.to_i
-              Chef::Log.debug "got '#{output}' from python helper"
-              return output
-            end
+            query("versioncompare", { "versions" => [version1, version2] }).to_i
           end
 
           def install_only_packages(name)
-            with_helper do
-              json = build_ipkgs_query("installonlypkgs", name)
-              Chef::Log.debug "sending '#{json}' to python helper"
-              outpipe.syswrite json + "\n"
-              output = inpipe.sysread(4096).chomp
-              Chef::Log.debug "got '#{output}' from python helper"
-              if output == "False"
-                return false
-              elsif output == "True"
-                return true
-              end
+            query_output = query("installonlypkgs", { "package" => name })
+            if query_output == "False"
+              return false
+            elsif query_output == "True"
+              return true
             end
           end
 
           # @returns Array<Version>
-          def query(action, provides, version = nil, arch = nil)
-            with_helper do
-              json = build_query(action, provides, version, arch)
-              Chef::Log.debug "sending '#{json}' to python helper"
-              outpipe.syswrite json + "\n"
-              output = inpipe.sysread(4096).chomp
-              Chef::Log.debug "got '#{output}' from python helper"
-              version = parse_response(output.lines.last)
-              Chef::Log.debug "parsed #{version} from python helper"
-              version
-            end
+          def package_query(action, provides, version = nil, arch = nil)
+            query_output = query(action, { "provides" => provides, "version" => version, "arch" => arch })
+            version = parse_response(query_output.lines.last)
+            Chef::Log.debug "parsed #{version} from python helper"
+            version
           end
 
           def restart
@@ -137,23 +118,28 @@ class Chef
             hash["version"] = version
           end
 
-          def build_query(action, provides, version, arch)
-            hash = { "action" => action }
-            hash["provides"] = provides
-            add_version(hash, version) unless version.nil?
-            hash["arch" ] = arch unless arch.nil?
-            FFI_Yajl::Encoder.encode(hash)
+          def query(action, parameters)
+            with_helper do
+              json = build_query(action, parameters)
+              Chef::Log.debug "sending '#{json}' to python helper"
+              outpipe.syswrite json + "\n"
+              output = inpipe.sysread(4096).chomp
+              Chef::Log.debug "got '#{output}' from python helper"
+              return output
+            end
           end
 
-          def build_version_query(action, versions)
+          def build_query(action, parameters)
             hash = { "action" => action }
-            hash["versions"] = versions
-            FFI_Yajl::Encoder.encode(hash)
-          end
+            parameters.each do |param_name, param_value|
+              hash[param_name] = param_value unless param_value.nil?
+            end
 
-          def build_ipkgs_query(action, package)
-            hash = { "action" => action }
-            hash["package"] = package
+            # Special handling for certain action / param combos
+            if [:whatinstalled, :whatavailable].include?(action)
+              add_version(hash, parameters["version"]) unless parameters["version"].nil?
+            end
+
             FFI_Yajl::Encoder.encode(hash)
           end
 
