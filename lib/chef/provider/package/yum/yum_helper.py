@@ -64,15 +64,17 @@ def install_only_packages(name):
 def query(command):
     base = get_base()
 
+    enabled_repos = base.repos.listEnabled()
+
     # Handle any repocontrols passed in with our options
     if 'repocontrol' in command:
       repocontrols = command['repocontrol'].split()
       for control in repocontrols:
-        repocommand, reponame = control.split("=")
+        repocommand, reponames = control.split("=")
         if "enablerepo" in repocommand:
-          base.repos.enableRepo(reponame)
+          base.repos.enableRepo(reponames)
         elif "disablerepo" in repocommand:
-          base.repos.disableRepo(reponame)
+          base.repos.disableRepo(reponames)
 
     args = { 'name': command['provides'] }
     do_nevra = False
@@ -115,7 +117,6 @@ def query(command):
                 # handles flags (<, >, =, etc) and versions, but no wildcareds 
                 pkgs = obj.getProvides(*command['provides'].split())
 
-
     if not pkgs:
         outpipe.write('{0} nil nil\n'.format(command['provides'].split().pop(0)))
         outpipe.flush()
@@ -125,6 +126,19 @@ def query(command):
         pkg = pkgs.pop(0)
         outpipe.write('{0} {1}:{2}-{3} {4}\n'.format(pkg.name, pkg.epoch, pkg.version, pkg.release, pkg.arch))
         outpipe.flush()
+
+
+    # Reset any repos we were passed in repocommands according to the original list of enabled repos
+    if 'repocontrol' in command:
+      repocontrols = command['repocontrol'].split()
+      for control in repocontrols:
+        repocommand, reponames = control.split("=")
+        ind_reponames = reponames.split(",")
+        for ind_repo in ind_reponames:
+          if base.repos.getRepo(ind_repo) in enabled_repos:
+            base.repos.enableRepo(ind_repo)
+          else:
+            base.repos.disableRepo(ind_repo)
 
 # the design of this helper is that it should try to be 'brittle' and fail hard and exit in order
 # to keep process tables clean.  additional error handling should probably be added to the retry loop

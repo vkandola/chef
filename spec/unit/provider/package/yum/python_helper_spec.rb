@@ -24,6 +24,6 @@ describe Chef::Provider::Package::Yum::PythonHelper do
 
   it "propagates stacktraces on stderr from the forked subprocess" do
     allow(helper).to receive(:yum_command).and_return("ruby -e 'raise \"your hands in the air\"'")
-    expect { helper.query(:whatprovides, "tcpdump") }.to raise_error(/your hands in the air/)
+    expect { helper.package_query(:whatprovides, "tcpdump") }.to raise_error(/your hands in the air/)
   end
 end
