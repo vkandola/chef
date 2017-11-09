@@ -35,7 +35,6 @@ class Chef
           attr_accessor :inpipe
           attr_accessor :outpipe
           attr_accessor :wait_thr
-          attr_accessor :extra_repo_control
 
           YUM_HELPER = ::File.expand_path(::File.join(::File.dirname(__FILE__), "yum_helper.py")).freeze
 
@@ -85,10 +84,23 @@ class Chef
             end
           end
 
+          def options_params(options)
+            options.each_with_object({}) do |opt, h|
+              if opt =~ /--enablerepo=(.+)/
+                h['enablerepos'] ||= []
+                h['enablerepos'].push($1)
+              end
+              if opt =~ /--disablerepo=(.+)/
+                h['disablerepos'] ||= []
+                h['disablerepos'].push($1)
+              end
+            end
+          end
+
           # @returns Array<Version>
-          def package_query(action, provides, version = nil, arch = nil)
+          def package_query(action, provides, version = nil, arch = nil, options = nil)
             parameters = { "provides" => provides, "version" => version, "arch" => arch }
-            parameters["repocontrol"] = @extra_repo_control unless @extra_repo_control.nil?
+            parameters.merge!(options_params(options)) unless options.nil?
             query_output = query(action, parameters)
             version = parse_response(query_output.lines.last)
             Chef::Log.debug "parsed #{version} from python helper"
@@ -124,9 +136,11 @@ class Chef
           def query(action, parameters)
             with_helper do
               json = build_query(action, parameters)
+puts json
               Chef::Log.debug "sending '#{json}' to python helper"
               outpipe.syswrite json + "\n"
               output = inpipe.sysread(4096).chomp
+puts output
               Chef::Log.debug "got '#{output}' from python helper"
               return output
             end
@@ -165,7 +179,6 @@ class Chef
           end
 
           def with_helper
-            @extra_repo_control = nil
             max_retries ||= 5
             ret = nil
             Timeout.timeout(600) do

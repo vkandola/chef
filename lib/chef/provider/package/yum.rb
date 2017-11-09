@@ -59,7 +59,6 @@ class Chef
         end
 
         def load_current_resource
-          manage_extra_repo_control
           flushcache if new_resource.flush_cache[:before]
 
           @current_resource = Chef::Resource::YumPackage.new(new_resource.name)
@@ -146,23 +145,6 @@ class Chef
 
         private
 
-        def manage_extra_repo_control
-          if new_resource.options
-            repo_control = []
-            new_resource.options.each do |opt|
-              repo_control << opt if opt =~ /--(enable|disable)repo=.+/
-            end
-
-            if !repo_control.empty?
-              python_helper.extra_repo_control = repo_control.join(" ")
-            else
-              python_helper.extra_repo_control = nil
-            end
-          else
-            python_helper.extra_repo_control = nil
-          end
-        end
-
         def version_equals?(v1, v2)
           return false unless v1 && v2
           version_compare(v1, v2) == 0
@@ -198,7 +180,7 @@ class Chef
           @available_version[index] ||= if new_resource.source
                                           resolve_source_to_version_obj
                                         else
-                                          python_helper.package_query(:whatavailable, package_name_array[index], safe_version_array[index], safe_arch_array[index])
+                                          python_helper.package_query(:whatavailable, package_name_array[index], safe_version_array[index], safe_arch_array[index], options)
                                         end
 
           @available_version[index]
@@ -208,9 +190,9 @@ class Chef
         def installed_version(index)
           @installed_version ||= []
           @installed_version[index] ||= if new_resource.source
-                                          python_helper.package_query(:whatinstalled, available_version(index).name, safe_version_array[index], safe_arch_array[index])
+                                          python_helper.package_query(:whatinstalled, available_version(index).name, safe_version_array[index], safe_arch_array[index], options)
                                         else
-                                          python_helper.package_query(:whatinstalled, package_name_array[index], safe_version_array[index], safe_arch_array[index])
+                                          python_helper.package_query(:whatinstalled, package_name_array[index], safe_version_array[index], safe_arch_array[index], options)
                                         end
           @installed_version[index]
         end

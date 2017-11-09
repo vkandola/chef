@@ -67,14 +67,11 @@ def query(command):
     enabled_repos = base.repos.listEnabled()
 
     # Handle any repocontrols passed in with our options
-    if 'repocontrol' in command:
-      repocontrols = command['repocontrol'].split()
-      for control in repocontrols:
-        repocommand, reponames = control.split("=")
-        if "enablerepo" in repocommand:
-          base.repos.enableRepo(reponames)
-        elif "disablerepo" in repocommand:
-          base.repos.disableRepo(reponames)
+    if 'enablerepos' in command:
+      base.repos.enableRepo(*command['enablerepos'])
+
+    if 'disablerepos' in command:
+      base.repos.enableRepo(*command['disablerepos'])
 
     args = { 'name': command['provides'] }
     do_nevra = False
