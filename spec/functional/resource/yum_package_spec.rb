@@ -156,6 +156,23 @@ gpgcheck=0
         expect(yum_package.updated_by_last_action?).to be true
         expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.10-1.fc24.x86_64$")
       end
+
+      it "upgrades when the installed version does not match the version string" do
+        preinstall("chef_rpm-1.2-1.fc24.x86_64.rpm")
+        yum_package.package_name("chef_rpm-1.10")
+        yum_package.run_action(:install)
+        expect(yum_package.updated_by_last_action?).to be true
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.10-1.fc24.x86_64")
+      end
+
+      it "downgrades when the installed version does not match the version string" do
+        # FIXME? shouldn't this throw an exception?  shouldn't this with allow_downgrade do the downgrade?
+        preinstall("chef_rpm-1.10-1.fc24.x86_64.rpm")
+        yum_package.package_name("chef_rpm-1.2")
+        yum_package.run_action(:install)
+        expect(yum_package.updated_by_last_action?).to be true
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.2-1.fc24.x86_64")
+      end
     end
 
     # version only matches the actual yum version, does not work with epoch or release or combined evr
@@ -484,6 +501,31 @@ gpgcheck=0
         yum_package.arch(%w{x86_64 i686})
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be false
+      end
+    end
+
+    context "repo controls" do
+      it "should fail with the repo disabled" do
+        flush_cache
+        # install chef_rpm-1.2 using --enablerepo
+        yum_package.options("--disablerepo=chef-yum-localtesting")
+        expect { yum_package.run_action(:install) }.to raise_error(Chef::Exceptions::Package, /No candidate version available/)
+      end
+
+      it "enablerepo on an default enabled repo does not disable it" do
+        flush_cache
+        # install chef_rpm-1.2 using --enablerepo
+        yum_package.package_name("chef_rpm-1.2-1.fc24.x86_64")
+        yum_package.options("--enablerepo=chef-yum-localtesting")
+        yum_package.run_action(:install)
+        expect(yum_package.updated_by_last_action?).to be true
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.2-1.fc24.x86_64$")
+        # we can still upgrade to 1.10 
+        yum_package.package_name("chef_rpm-1.10-1.fc24.x86_64")
+        yum_package.options(nil)
+        yum_package.run_action(:install)
+        expect(yum_package.updated_by_last_action?).to be true
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.10-1.fc24.x86_64$")
       end
     end
   end
