@@ -101,7 +101,7 @@ class Chef
 
             # If this is a package like the kernel that can be installed multiple times, we'll skip over this logic
             unless python_helper.install_only_packages(n)
-              if version_compare(cv, v) == 1
+              if version_gt?(cv, v)
                   # We allow downgrading only in the evenit of single-package
                   # rules where the user explicitly allowed it
                 method = "downgrade" if new_resource.allow_downgrade
@@ -109,7 +109,7 @@ class Chef
             end
 
             # methods don't count for packages we won't be touching
-            next if version_compare(cv, v) == 0
+            next if version_equals?(cv, v)
             methods << method
           end
 
@@ -145,9 +145,14 @@ class Chef
 
         private
 
+        def version_gt?(v1, v2)
+          return false if v1.nil? || v2.nil?
+          python_helper.compare_versions(v1, v2) == 1
+        end
+
         def version_equals?(v1, v2)
-          return false unless v1 && v2
-          version_compare(v1, v2) == 0
+          return false if v1.nil? || v2.nil?
+          python_helper.compare_versions(v1, v2) == 0
         end
 
         # Generate the yum syntax for the package
@@ -169,10 +174,6 @@ class Chef
           end
         end
 
-        def version_compare(v1, v2)
-          python_helper.compare_versions(v1, v2)
-        end
-
         # @returns Array<Version>
         def available_version(index)
           @available_version ||= []
@@ -190,9 +191,9 @@ class Chef
         def installed_version(index)
           @installed_version ||= []
           @installed_version[index] ||= if new_resource.source
-                                          python_helper.package_query(:whatinstalled, available_version(index).name, safe_version_array[index], safe_arch_array[index], options)
+                                          python_helper.package_query(:whatinstalled, available_version(index).name, safe_version_array[index], safe_arch_array[index])
                                         else
-                                          python_helper.package_query(:whatinstalled, package_name_array[index], safe_version_array[index], safe_arch_array[index], options)
+                                          python_helper.package_query(:whatinstalled, package_name_array[index], safe_version_array[index], safe_arch_array[index])
                                         end
           @installed_version[index]
         end
@@ -205,6 +206,7 @@ class Chef
         end
 
         def yum(*args)
+puts a_to_s("yum", *args)
           shell_out_with_timeout!(a_to_s("yum", *args))
         end
 

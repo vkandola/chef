@@ -108,6 +108,7 @@ class Chef
           end
 
           def restart
+puts "RESTARTING!"
             reap
             start
           end

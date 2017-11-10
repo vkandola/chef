@@ -55,6 +55,7 @@ def versioncompare(versions):
         outpipe.flush()
 
 def install_only_packages(name):
+    base = get_base()
     if name in base.conf.installonlypkgs:
       outpipe.write('True')
     else:
@@ -71,7 +72,7 @@ def query(command):
       base.repos.enableRepo(*command['enablerepos'])
 
     if 'disablerepos' in command:
-      base.repos.enableRepo(*command['disablerepos'])
+      base.repos.disableRepo(*command['disablerepos'])
 
     args = { 'name': command['provides'] }
     do_nevra = False
@@ -124,19 +125,17 @@ def query(command):
         outpipe.write('{0} {1}:{2}-{3} {4}\n'.format(pkg.name, pkg.epoch, pkg.version, pkg.release, pkg.arch))
         outpipe.flush()
 
+    # Reset any repos we were passed in enablerepo/disablerepo to the original state in enabled_repos
+    if 'enablerepos' in command:
+        for repo in command['enablerepos']:
+            if base.repos.getRepo(repo) not in enabled_repos:
+                base.repos.disableRepo(repo)
 
-    # Reset any repos we were passed in repocommands according to the original list of enabled repos
-    if 'repocontrol' in command:
-      repocontrols = command['repocontrol'].split()
-      for control in repocontrols:
-        repocommand, reponames = control.split("=")
-        ind_reponames = reponames.split(",")
-        for ind_repo in ind_reponames:
-          if base.repos.getRepo(ind_repo) in enabled_repos:
-            base.repos.enableRepo(ind_repo)
-          else:
-            base.repos.disableRepo(ind_repo)
-
+    if 'disablerepos' in command:
+        for repo in command['disablerepos']:
+            if base.repos.getRepo(repo) in enabled_repos:
+                base.repos.enableRepo(repo)
+         
 # the design of this helper is that it should try to be 'brittle' and fail hard and exit in order
 # to keep process tables clean.  additional error handling should probably be added to the retry loop
 # on the ruby side.

@@ -35,6 +35,10 @@ describe Chef::Resource::YumPackage, :requires_root, :external => exclude_test d
     flush_cache
   end
 
+  before(:all) do
+    shell_out!("yum -y install yum-utils")
+  end
+
   before(:each) do
     File.open("/etc/yum.repos.d/chef-yum-localtesting.repo", "w+") do |f|
       f.write <<-EOF
@@ -46,6 +50,9 @@ gpgcheck=0
       EOF
     end
     shell_out!("rpm -qa | grep chef_rpm | xargs -r rpm -e")
+    # next line is useful cleanup if you happen to have been testing both yum + dnf func tests on the same box and
+    # have some dnf garbage left around
+    FileUtils.rm_f "/etc/yum.repos.d/chef-dnf-localtesting.repo"
   end
 
   after(:all) do
@@ -507,20 +514,33 @@ gpgcheck=0
     context "repo controls" do
       it "should fail with the repo disabled" do
         flush_cache
-        # install chef_rpm-1.2 using --enablerepo
         yum_package.options("--disablerepo=chef-yum-localtesting")
         expect { yum_package.run_action(:install) }.to raise_error(Chef::Exceptions::Package, /No candidate version available/)
       end
 
-      it "enablerepo on an default enabled repo does not disable it" do
+      it "should work to enable a disabled repo" do
+        shell_out!("yum-config-manager --disable chef-yum-localtesting")
         flush_cache
-        # install chef_rpm-1.2 using --enablerepo
-        yum_package.package_name("chef_rpm-1.2-1.fc24.x86_64")
+        expect { yum_package.run_action(:install) }.to raise_error(Chef::Exceptions::Package, /No candidate version available/)
+        flush_cache
         yum_package.options("--enablerepo=chef-yum-localtesting")
         yum_package.run_action(:install)
         expect(yum_package.updated_by_last_action?).to be true
+        expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.10-1.fc24.x86_64$")
+      end
+
+      it "when an idempotent install action is run, does not leave repos disabled" do
+        flush_cache
+        # this is a bit tricky -- we need this action to be idempotent, so that it doesn't recycle any
+        # caches, but need it to hit whatavailable with the repo disabled.  using :upgrade like this
+        # accomplishes both those goals.
+        preinstall("chef_rpm-1.2-1.fc24.x86_64.rpm")
+        yum_package.options("--disablerepo=chef-yum-localtesting")
+        yum_package.run_action(:upgrade)
+        expect(yum_package.updated_by_last_action?).to be false
         expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.2-1.fc24.x86_64$")
-        # we can still upgrade to 1.10 
+        # now we're still using the same cache in the yum_helper.py cache and we test to see if the
+        # repo that we temporarily disabled is enabled on this pass.
         yum_package.package_name("chef_rpm-1.10-1.fc24.x86_64")
         yum_package.options(nil)
         yum_package.run_action(:install)
