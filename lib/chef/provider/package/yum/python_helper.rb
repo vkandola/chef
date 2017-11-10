@@ -108,7 +108,6 @@ class Chef
           end
 
           def restart
-puts "RESTARTING!"
             reap
             start
           end
@@ -137,11 +136,9 @@ puts "RESTARTING!"
           def query(action, parameters)
             with_helper do
               json = build_query(action, parameters)
-puts json
               Chef::Log.debug "sending '#{json}' to python helper"
               outpipe.syswrite json + "\n"
               output = inpipe.sysread(4096).chomp
-puts output
               Chef::Log.debug "got '#{output}' from python helper"
               return output
             end
