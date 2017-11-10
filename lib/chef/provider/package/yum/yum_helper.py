@@ -22,37 +22,27 @@ def get_base():
     return base
 
 def versioncompare(versions):
-    if (versions[0] is None) and (versions[1] is None):
-        outpipe.write('0\n')
-        outpipe.flush()
-    elif versions[0] is None:
-        outpipe.write('-1\n')
-        outpipe.flush()
-    elif versions[1] is None:
-        outpipe.write('1\n')
-        outpipe.flush()
+    arch_list = getArchList()
+    candidate_arch1 = versions[0].split(".")[-1]
+    candidate_arch2 = versions[1].split(".")[-1]
+
+    # The first version number passed to this method is always a valid nevra (the current version)
+    # If the second version number looks like it does not contain a valid arch
+    # then we'll chop the arch component (assuming it *is* a valid one) from the first version string
+    # so we're only comparing the evr portions.
+    if (candidate_arch2 not in arch_list) and (candidate_arch1 in arch_list):
+       final_version1 = versions[0].replace("." + candidate_arch1,"")
     else:
-        arch_list = getArchList()
-        candidate_arch1 = versions[0].split(".")[-1]
-        candidate_arch2 = versions[1].split(".")[-1]
+       final_version1 = versions[0]
 
-        # The first version number passed to this method is always a valid nevra (the current version)
-        # If the second version number looks like it does not contain a valid arch
-        # then we'll chop the arch component (assuming it *is* a valid one) from the first version string
-        # so we're only comparing the evr portions.
-        if (candidate_arch2 not in arch_list) and (candidate_arch1 in arch_list):
-           final_version1 = versions[0].replace("." + candidate_arch1,"")
-        else:
-           final_version1 = versions[0]
+    final_version2 = versions[1]
 
-        final_version2 = versions[1]
+    (e1, v1, r1) = stringToVersion(final_version1)
+    (e2, v2, r2) = stringToVersion(final_version2)
 
-        (e1, v1, r1) = stringToVersion(final_version1)
-        (e2, v2, r2) = stringToVersion(final_version2)
-
-        evr_comparison = compareEVR((e1, v1, r1), (e2, v2, r2))
-        outpipe.write('{0}\n'.format(evr_comparison))
-        outpipe.flush()
+    evr_comparison = compareEVR((e1, v1, r1), (e2, v2, r2))
+    outpipe.write('{0}\n'.format(evr_comparison))
+    outpipe.flush()
 
 def install_only_packages(name):
     base = get_base()
@@ -135,7 +125,7 @@ def query(command):
         for repo in command['disablerepos']:
             if base.repos.getRepo(repo) in enabled_repos:
                 base.repos.enableRepo(repo)
-         
+
 # the design of this helper is that it should try to be 'brittle' and fail hard and exit in order
 # to keep process tables clean.  additional error handling should probably be added to the retry loop
 # on the ruby side.

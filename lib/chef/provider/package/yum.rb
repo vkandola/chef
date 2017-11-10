@@ -155,6 +155,11 @@ class Chef
           python_helper.compare_versions(v1, v2) == 0
         end
 
+        def version_compare(v1, v2)
+          return false if v1.nil? || v2.nil?
+          python_helper.compare_versions(v1, v2)
+        end
+
         # Generate the yum syntax for the package
         def yum_syntax(name, version, arch)
           s = name
