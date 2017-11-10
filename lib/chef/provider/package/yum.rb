@@ -211,7 +211,6 @@ class Chef
         end
 
         def yum(*args)
-puts a_to_s("yum", *args)
           shell_out_with_timeout!(a_to_s("yum", *args))
         end
 
