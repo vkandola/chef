@@ -87,12 +87,16 @@ class Chef
           def options_params(options)
             options.each_with_object({}) do |opt, h|
               if opt =~ /--enablerepo=(.+)/
-                h["enablerepos"] ||= []
-                h["enablerepos"].push($1)
+                $1.split(",").each do |repo|
+                  h["enablerepos"] ||= []
+                  h["enablerepos"].push(repo)
+                end
               end
               if opt =~ /--disablerepo=(.+)/
-                h["disablerepos"] ||= []
-                h["disablerepos"].push($1)
+                $1.split(",").each do |repo|
+                  h["disablerepos"] ||= []
+                  h["disablerepos"].push(repo)
+                end
               end
             end
           end
