@@ -87,12 +87,12 @@ class Chef
           def options_params(options)
             options.each_with_object({}) do |opt, h|
               if opt =~ /--enablerepo=(.+)/
-                h['enablerepos'] ||= []
-                h['enablerepos'].push($1)
+                h["enablerepos"] ||= []
+                h["enablerepos"].push($1)
               end
               if opt =~ /--disablerepo=(.+)/
-                h['disablerepos'] ||= []
-                h['disablerepos'].push($1)
+                h["disablerepos"] ||= []
+                h["disablerepos"].push($1)
               end
             end
           end
@@ -100,10 +100,13 @@ class Chef
           # @returns Array<Version>
           def package_query(action, provides, version = nil, arch = nil, options = nil)
             parameters = { "provides" => provides, "version" => version, "arch" => arch }
-            parameters.merge!(options_params(options)) unless options.nil?
+            repo_opts = options_params(options)
+            parameters.merge!(repo_opts)
             query_output = query(action, parameters)
             version = parse_response(query_output.lines.last)
             Chef::Log.debug "parsed #{version} from python helper"
+            # XXX: for now we restart after every query with an enablerepo/disablerepo to clean the helpers internal state
+            restart unless repo_opts.empty?
             version
           end
 
