@@ -100,12 +100,10 @@ class Chef
             method = "install"
 
             # If this is a package like the kernel that can be installed multiple times, we'll skip over this logic
-            unless python_helper.install_only_packages(n)
-              if version_gt?(cv, v)
-                  # We allow downgrading only in the evenit of single-package
-                  # rules where the user explicitly allowed it
-                method = "downgrade" if new_resource.allow_downgrade
-              end
+            if version_gt?(cv, v) && !python_helper.install_only_packages(n)
+              # We allow downgrading only in the evenit of single-package
+              # rules where the user explicitly allowed it
+              method = "downgrade" if new_resource.allow_downgrade
             end
 
             # methods don't count for packages we won't be touching
@@ -120,7 +118,7 @@ class Chef
           end
 
           if new_resource.source
-            yum(options, "-y install", new_resource.source)
+            yum(options, "-y #{method}", new_resource.source)
           else
             resolved_names = names.each_with_index.map { |name, i| available_version(i).to_s unless name.nil? }
             yum(options, "-y #{method}", resolved_names)
