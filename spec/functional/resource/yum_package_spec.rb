@@ -392,15 +392,11 @@ gpgcheck=0
         preinstall("chef_rpm-1.10-1.fc24.x86_64.rpm")
         yum_package.version "1.2-1"
         yum_package.package_name("#{CHEF_SPEC_ASSETS}/yumrepo/chef_rpm-1.2-1.fc24.x86_64.rpm")
-        expect { yum_package.run_action(:install) }.to raise_error
+        expect { yum_package.run_action(:install) }.to raise_error(Mixlib::ShellOut::ShellCommandFailed)
       end
 
       it "downgrade on a local file with allow_downgrade true works" do
         preinstall("chef_rpm-1.10-1.fc24.x86_64.rpm")
-        # FIXME: we should use the read versino off of the file as the "new_resource" (but, 
-        # of course, without updating the new_resource) in order to turn this automatically
-        # into an equality version pinning resource.  but that will require some more
-        # surgery and hooking into the superclass
         yum_package.version "1.2-1" 
         yum_package.allow_downgrade true
         yum_package.package_name("#{CHEF_SPEC_ASSETS}/yumrepo/chef_rpm-1.2-1.fc24.x86_64.rpm")
@@ -592,9 +588,9 @@ gpgcheck=0
         expect(shell_out("rpm -q chef_rpm").stdout.chomp).to match("^chef_rpm-1.2-1.fc24.x86_64$")
       end
 
-      it "downgrades the package" do
-        pending "doesn't work on yum command line either"
+      it "downgrades the package when allow_downgrade is true" do
         preinstall("chef_rpm-1.10-1.fc24.x86_64.rpm")
+        yum_package.allow_downgrade true
         yum_package.package_name("#{CHEF_SPEC_ASSETS}/yumrepo/chef_rpm-1.2-1.fc24.x86_64.rpm")
         yum_package.run_action(:upgrade)
         expect(yum_package.updated_by_last_action?).to be true
